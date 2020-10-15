@@ -18,7 +18,7 @@ from botocore.paginate import PageIterator
 from botocore.exceptions import OperationNotPageableError
 
 
-@pytest.mark.parametrize('region',['us-east-1', 'us-west-2', 'us-west-2', 'ap-northeast-1',
+@pytest.mark.parametrize('region',['us-east-1', 'us-west-2', 'ap-northeast-1',
                    'ap-southeast-1', 'ap-southeast-2', 'sa-east-1', 'eu-west-1',
                    'eu-central-1'] )
 def test_emr_endpoints_work_with_py26(region):

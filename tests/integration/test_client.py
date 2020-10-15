@@ -80,7 +80,7 @@ class TestClientErrors(unittest.TestCase):
     def test_region_mentioned_in_invalid_region(self):
         client = self.session.create_client(
             'cloudformation', region_name='us-east-999')
-        with pytest.raises(EndpointConnectionError, match='Could not connect to the endpoint URL'):
+        with pytest.raises(EndpointConnectionError, match=r'Could not connect to the endpoint URL'):
             client.list_stacks()
 
     def test_client_modeled_exception(self):
@@ -101,7 +101,7 @@ class TestClientErrors(unittest.TestCase):
         try:
             client.describe_regions(DryRun=True)
         except client.exceptions.ClientError as e:
-            assert e.__class__ is ClientError
+            assert isinstance(e, ClientError)
 
     def test_can_catch_client_exceptions_across_two_different_clients(self):
         client = self.session.create_client(

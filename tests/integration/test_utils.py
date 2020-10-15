@@ -25,7 +25,6 @@ class ArgumentGeneratorError(AssertionError):
 
 
 def _generate_all_inputs():
-    inputs = []
     session = botocore.session.get_session()
     generator = ArgumentGenerator()
     for service_name in session.get_available_services():
@@ -54,8 +53,8 @@ def _test_can_generate_skeleton(generator, shape, service_name,
             generated, "generated arguments were empty")
 
 
-@pytest.mark.parametrize("generator,input_shape,service_name, operation_name", _generate_all_inputs())
-def test_can_generate_all_inputs(generator,input_shape,service_name, operation_name):
+@pytest.mark.parametrize("generator,input_shape,service_name,operation_name", _generate_all_inputs())
+def test_can_generate_all_inputs(generator, input_shape, service_name, operation_name):
     if input_shape is not None and input_shape.members:
         _test_can_generate_skeleton(generator,
             input_shape, service_name, operation_name)

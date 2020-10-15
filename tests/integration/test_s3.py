@@ -1009,7 +1009,7 @@ class TestS3SigV4Client(BaseS3ClientTest):
                 Bucket=self.bucket_name,
                 Key='foo.txt',
             )
-        assert e.value.response['Error']['Code'], '400'
+            assert e.value.response['Error']['Code'], '400'
 
 
 class TestSSEKeyParamValidation(BaseS3ClientTest):
