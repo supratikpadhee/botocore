@@ -141,14 +141,14 @@ def _generate_page_configs():
         page_config = loader.load_service_model(service_name,
                                                 'paginators-1',
                                                 service_model.api_version)
-        page_configs.append({'service_model': service_model, 'page_config': page_config})
+        yield (service_model, page_config['pagination'])
     return page_configs
 
 
-@pytest.mark.parametrize('page', _generate_page_configs())
-def test_lint_pagination_configs(page):
-    for op_name, single_config in page['page_config']['pagination'].items():
-        _lint_single_paginator(op_name, single_config, page['service_model'])
+@pytest.mark.parametrize('service_model, pagination', _generate_page_configs())
+def test_lint_pagination_configs(service_model, pagination):
+    for op_name, single_config in pagination.items():
+        _lint_single_paginator(op_name, single_config, service_model)
 
 
 def _lint_single_paginator(operation_name, page_config,

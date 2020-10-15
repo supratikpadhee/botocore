@@ -81,8 +81,8 @@ OPERATION_PARAMS = {
     },
 }
 
-@pytest.mark.parametrize("operation_name", OPERATION_PARAMS.keys())
-def test_unsigned_operations(operation_name):
+@pytest.mark.parametrize("operation_name, params", OPERATION_PARAMS.items())
+def test_unsigned_operations(operation_name, params):
     environ = {
         'AWS_ACCESS_KEY_ID': 'access_key',
         'AWS_SECRET_ACCESS_KEY': 'secret_key',
@@ -93,7 +93,6 @@ def test_unsigned_operations(operation_name):
         session = create_session()
         session.config_filename = 'no-exist-foo'
         client = session.create_client('cognito-idp', 'us-west-2')
-        params = OPERATION_PARAMS[operation_name]
         http_stubber = ClientHTTPStubber(client)
         operation = getattr(client, operation_name)
         http_stubber.add_response(body=b'{}')

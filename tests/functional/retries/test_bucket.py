@@ -106,4 +106,4 @@ class TestTokenBucketThreading(unittest.TestCase):
         # can sanity check that our implementation isn't drastically
         # starving a thread.  So we'll arbitrarily say that a thread
         # can't have less than 20% of the mean allocations per thread.
-        assert not any(x < (0.2 * mean) for x in distribution)
+        assert any(x < (0.2 * mean) for x in distribution) is False

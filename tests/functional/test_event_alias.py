@@ -578,10 +578,10 @@ SERVICES = {
     }
 }
 
-@pytest.mark.parametrize("client_name", SERVICES.keys())
-def test_event_alias(client_name):
-    endpoint_prefix = SERVICES[client_name].get('endpoint_prefix')
-    service_id = SERVICES[client_name]['service_id']
+@pytest.mark.parametrize("client_name, metadata", SERVICES.items())
+def test_event_alias(client_name, metadata):
+    endpoint_prefix = metadata.get('endpoint_prefix')
+    service_id = metadata['service_id']
     if endpoint_prefix is not None:
         _assert_handler_called(client_name, endpoint_prefix)
     _assert_handler_called(client_name, service_id)

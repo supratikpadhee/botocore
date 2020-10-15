@@ -14,6 +14,6 @@ class TestCreateClients(unittest.TestCase):
         assert hasattr(client, 'list_buckets')
 
     def test_client_raises_exception_invalid_region(self):
-        with pytest.raises(ValueError, match='invalid region name'):
+        with pytest.raises(ValueError, match=r'invalid region name'):
             self.session.create_client(
                 'cloudformation', region_name='invalid region name')

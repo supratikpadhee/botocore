@@ -448,7 +448,7 @@ def _get_patched_session():
     return session
     
 
-class TestRegions(object):
+class TestRegions:
     @pytest.mark.parametrize("region_name,service_dict", KNOWN_REGIONS.items())
     def test_known_endpoints(self, region_name, service_dict):
         # Verify the actual values from the partition files.  While

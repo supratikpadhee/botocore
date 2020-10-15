@@ -22,6 +22,7 @@ class TestNeptunePresignUrlInjection(BaseSessionTest):
 
     def assert_presigned_url_injected_in_request(self, body):
         assert 'PreSignedUrl' in body
+        assert 'SourceRegion' not in body
     def test_create_db_cluster(self):
         params = {
             'DBClusterIdentifier': 'my-cluster',

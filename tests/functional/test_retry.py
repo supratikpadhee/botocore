@@ -185,4 +185,4 @@ class TestRetriesV2(BaseRetryTest):
             http_stubber.add_response(status=502, body=b'{}')
             with pytest.raises(ClientError) as e:
                 client.list_tables()
-        assert e.value.response['ResponseMetadata'].get('RetryQuotaReached')
+                assert e.response['ResponseMetadata'].get('RetryQuotaReached')

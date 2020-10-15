@@ -62,14 +62,14 @@ def _test_public_apis_will_not_be_signed(client, operation, kwargs):
     assert sig_v4_disabled, "SigV4 is incorrectly enabled"
 
 
-@pytest.mark.parametrize('service_name', PUBLIC_API_TESTS.keys())
-def test_public_apis_will_not_be_signed(service_name):
+@pytest.mark.parametrize('service_name, operations', PUBLIC_API_TESTS.items())
+def test_public_apis_will_not_be_signed(service_name, operations):
     session = Session()
 
     # Mimic the scenario that user does not have aws credentials setup
     session.get_credentials = mock.Mock(return_value=None)
     client = session.create_client(service_name, REGIONS[service_name])
-    for operation_name in PUBLIC_API_TESTS[service_name]:
-        kwargs = PUBLIC_API_TESTS[service_name][operation_name]
+    for operation_name in operations:
+        kwargs = operations[operation_name]
         method = getattr(client, xform_name(operation_name))
         _test_public_apis_will_not_be_signed(client, method, kwargs)

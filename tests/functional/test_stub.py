@@ -56,7 +56,7 @@ class TestStubber(unittest.TestCase):
     def test_activated_stubber_errors_with_no_registered_stubs(self):
         self.stubber.activate()
         # Params one per line for readability.
-        with pytest.raises(UnStubbedResponseError, match="Unexpected API Call"):
+        with pytest.raises(UnStubbedResponseError, match=r"Unexpected API Call"):
             self.client.list_objects(
                 Bucket='asdfasdfasdfasdf',
                 Delimiter='asdfasdfasdfasdf',
@@ -120,7 +120,7 @@ class TestStubber(unittest.TestCase):
             'list_objects', service_response, expected_params)
         self.stubber.activate()
         # This should call should raise an for mismatching expected params.
-        with pytest.raises(StubResponseError, match="{'Bucket': 'bar'},\n"):
+        with pytest.raises(StubResponseError, match=r"{'Bucket': 'bar'},\n"):
             self.client.list_objects(Bucket='foo')
 
     def test_expected_params_mixed_with_errors_responses(self):
@@ -143,7 +143,7 @@ class TestStubber(unittest.TestCase):
             self.client.list_objects(Bucket='foo')
 
         # The second call should throw an error for unexpected parameters
-        with pytest.raises(StubResponseError, match='Expected parameters'):
+        with pytest.raises(StubResponseError, match=r'Expected parameters'):
             self.client.list_objects(Bucket='foo')
 
     def test_can_continue_to_call_after_expected_params_fail(self):

@@ -75,7 +75,7 @@ class TestS3ClientConfigResolution(BaseS3ClientConfigurationTest):
                 '    use_dualstack_endpoint = True'
             )
             client = self.create_s3_client()
-            assert client.meta.config.s3['use_dualstack_endpoint'] == True
+            assert client.meta.config.s3['use_dualstack_endpoint'] is True
 
     def test_client_s3_dualstack_handles_lowercase_true(self):
         with temporary_file('w') as f:
@@ -86,7 +86,7 @@ class TestS3ClientConfigResolution(BaseS3ClientConfigurationTest):
                 '    use_dualstack_endpoint = true'
             )
             client = self.create_s3_client()
-            assert client.meta.config.s3['use_dualstack_endpoint'] == True
+            assert client.meta.config.s3['use_dualstack_endpoint'] is True
 
     def test_client_s3_accelerate_handles_uppercase_true(self):
         with temporary_file('w') as f:
@@ -97,7 +97,7 @@ class TestS3ClientConfigResolution(BaseS3ClientConfigurationTest):
                 '    use_accelerate_endpoint = True'
             )
             client = self.create_s3_client()
-            assert client.meta.config.s3['use_accelerate_endpoint'] == True
+            assert client.meta.config.s3['use_accelerate_endpoint'] is True
 
     def test_client_s3_accelerate_handles_lowercase_true(self):
         with temporary_file('w') as f:
@@ -108,7 +108,7 @@ class TestS3ClientConfigResolution(BaseS3ClientConfigurationTest):
                 '    use_accelerate_endpoint = true'
             )
             client = self.create_s3_client()
-            assert client.meta.config.s3['use_accelerate_endpoint'] == True
+            assert client.meta.config.s3['use_accelerate_endpoint'] is True
 
     def test_client_payload_signing_enabled_handles_uppercase_true(self):
         with temporary_file('w') as f:
@@ -119,7 +119,7 @@ class TestS3ClientConfigResolution(BaseS3ClientConfigurationTest):
                 '    payload_signing_enabled = True'
             )
             client = self.create_s3_client()
-            assert client.meta.config.s3['payload_signing_enabled'] == True
+            assert client.meta.config.s3['payload_signing_enabled'] is True
 
     def test_client_payload_signing_enabled_handles_lowercase_true(self):
         with temporary_file('w') as f:
@@ -130,7 +130,7 @@ class TestS3ClientConfigResolution(BaseS3ClientConfigurationTest):
                 '    payload_signing_enabled = true'
             )
             client = self.create_s3_client()
-            assert client.meta.config.s3['payload_signing_enabled'] == True
+            assert client.meta.config.s3['payload_signing_enabled'] is True
 
     def test_includes_unmodeled_s3_config_vars(self):
         with temporary_file('w') as f:
@@ -1348,7 +1348,7 @@ def test_correct_url_used_for_s3():
     t.case(
         region='fips-us-gov-west-1', bucket='bucket', key='key',
         signature_version='s3',
-        expected_url='https://bucket.s3-fips.us-gov-west-1.amazonaws.com/key')
+        expected_url='https://bucket.s3-fips-us-gov-west-1.amazonaws.com/key')
 
     # Test path style addressing.
     path_style = {'addressing_style': 'path'}

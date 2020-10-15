@@ -31,4 +31,4 @@ class TestOpensslVersion(BaseSessionTest):
         with mock.patch('ssl.OPENSSL_VERSION_INFO', new=(1, 0, 1, 1, 1)):
             with mock.patch('warnings.warn') as mock_warn:
                 self.session.create_client('iot-data', 'us-east-1')
-                assert not mock_warn.called
+                assert mock_warn.called is False

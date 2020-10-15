@@ -78,5 +78,5 @@ class TestClientEvents(BaseSessionTest):
                      'parsed_response': None,
                      'context': mock.ANY
                  })
-            ]
+        ]
         assert recording_handler.recorded_events == expected_events

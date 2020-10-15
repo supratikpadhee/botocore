@@ -69,7 +69,7 @@ class TestCredentialRefreshRaces(unittest.TestCase):
             # from the first refresh ('1'), the secret key from
             # the second refresh ('2'), and the token from the
             # first refresh ('1').
-            assert creds[0] == creds[1] == creds[2], creds
+            assert creds[0] == creds[1] == creds[2]
 
     def assert_non_none_retrieved_credentials(self, func):
         collected = []

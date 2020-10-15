@@ -227,9 +227,6 @@ class TestTokenEncoding():
             {'foo': {'bar': b'baz', 'bin': [b'bam']}},
         ])
     def test_token_encoding(self, token_dict):
-        self.assert_token_encodes_and_decodes(token_dict)
-
-    def assert_token_encodes_and_decodes(self, token_dict):
         encoded = TokenEncoder().encode(token_dict)
         assert isinstance(encoded, six.string_types)
         decoded = TokenDecoder().decode(encoded)
