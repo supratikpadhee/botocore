@@ -138,7 +138,6 @@ def test_json_errors_parsing():
 
 
 def _uhg_test_json_parsing():
-    test_cases = []
     input_path = os.path.join(os.path.dirname(__file__), 'json')
     input_path = os.path.join(input_path, 'inputs')
     output_path = os.path.join(os.path.dirname(__file__), 'json')
@@ -157,16 +156,11 @@ def _uhg_test_json_parsing():
             operation_model = _get_operation_model(service_model, jsonfile)
             with open(jsonfile, 'rb') as f:
                 raw_response_body = f.read()
-            test_cases.append((jsonfile, raw_response_body, operation_model, expected))
-            """
-            yield _test_parsed_response, jsonfile, \
-                raw_response_body, operation_model, expected
-            """
+            yield (jsonfile, raw_response_body, operation_model, expected)
             # TODO: handle the __headers crap.
-    return test_cases
 
 
-@pytest.mark.parametrize("xmlfile, response_body, operation_model, expected", _uhg_test_json_parsing())
+@pytest.mark.parametrize("xmlfile,response_body,operation_model,expected", _uhg_test_json_parsing())
 def _test_parsed_response(xmlfile, response_body, operation_model, expected):
     response = {
         'body': response_body,

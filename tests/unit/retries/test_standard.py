@@ -339,7 +339,7 @@ class TestRetryEventAdapter(unittest.TestCase):
         assert context.operation_model == mock.sentinel.operation_model
         assert context.parsed_response == self.success_response
         assert context.http_response == self.http_success
-        assert context.caught_exception == None
+        assert context.caught_exception is None
         assert context.request_context == {'foo': 'bar'}
 
     def test_create_context_from_service_error(self):
@@ -364,8 +364,8 @@ class TestRetryEventAdapter(unittest.TestCase):
             request_dict={'context': {'foo': 'bar'}},
             operation=mock.sentinel.operation_model,
         )
-        assert context.parsed_response == None
-        assert context.http_response == None
+        assert context.parsed_response is None
+        assert context.http_response is None
         assert context.caught_exception == self.caught_exception
 
     def test_can_inject_metadata_back_to_context(self):
@@ -379,7 +379,7 @@ class TestRetryEventAdapter(unittest.TestCase):
         )
         context.add_retry_metadata(MaxAttemptsReached=True)
         adapter.adapt_retry_response_from_context(context)
-        assert self.failed_response['ResponseMetadata']['MaxAttemptsReached']
+        assert self.failed_response['ResponseMetadata']['MaxAttemptsReached'] is True
 
 
 class TestRetryPolicy(unittest.TestCase):

@@ -27,7 +27,7 @@ class TestCanCreateRetryHandler(unittest.TestCase):
         limiter = adaptive.register_retry_handler(client)
         assert client.meta.events.register.call_args_list == [
             mock.call('before-send', limiter.on_sending_request),
-             mock.call('needs-retry', limiter.on_receiving_response)]
+            mock.call('needs-retry', limiter.on_receiving_response)]
 
 
 class TestClientRateLimiter(unittest.TestCase):

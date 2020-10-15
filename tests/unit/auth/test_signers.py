@@ -191,7 +191,7 @@ class TestSigV2(unittest.TestCase):
         request.method = 'POST'
         params = {'Foo': u'\u2713'}
         result = self.signer.calc_signature(request, params)
-        assert result, ('Foo=%E2%9C%93',
+        assert result == ('Foo=%E2%9C%93',
                      u'VCtWuwaOL0yMffAT8W4y0AFW3W4KUykBqah9S40rB+Q=')
 
     def test_fields(self):
@@ -332,7 +332,7 @@ class TestS3SigV4Auth(BaseTestWithFixedDate):
         # by ensuring that query string paramters that are added to the
         # canonical query string are correctly formatted.
         cqs = self.auth.canonical_query_string(request)
-        assert 'marker=%C3%A4%C3%B6%C3%BC-01.txt&prefix=' == cqs
+        assert cqs == 'marker=%C3%A4%C3%B6%C3%BC-01.txt&prefix='
 
     def _test_blacklist_header(self, header, value):
         request = AWSRequest()
@@ -602,7 +602,7 @@ class TestSigV4Resign(BaseTestWithFixedDate):
         original_auth = self.request.headers['Authorization']
 
         self.auth.add_auth(self.request)
-        self.request.headers.get_all(
+        assert self.request.headers.get_all(
             'Authorization') == [original_auth]
 
 
@@ -691,7 +691,7 @@ class TestS3SigV2Presign(BasePresignTest):
         self.auth.add_auth(self.request)
         query_string = self.get_parsed_query_string(self.request)
         assert 'user-agent' not in query_string
-        assert query_string['Signature'] in 'ZRSgywstwIruKLTLt/Bcrf9H1K4='
+        assert query_string['Signature'] == 'ZRSgywstwIruKLTLt/Bcrf9H1K4='
 
 
 class TestSigV4Presign(BasePresignTest):
