@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 from tests import unittest, RawResponse
 import datetime
+import pytest
 
 from dateutil.tz import tzutc
 
@@ -84,11 +85,10 @@ class TestResponseMetadataParsed(unittest.TestCase):
             {'body': response,
              'headers': {},
              'status_code': 200}, output_shape)
-        self.assertEqual(
-            parsed, {'Str': 'myname',
+        assert parsed == {'Str': 'myname',
                      'ResponseMetadata': {'RequestId': 'request-id',
                                           'HTTPStatusCode': 200,
-                                          'HTTPHeaders': {}}})
+                                          'HTTPHeaders': {}}}
 
     def test_metadata_always_exists_for_query(self):
         # ResponseMetadata is used for more than just the request id. It
@@ -132,7 +132,7 @@ class TestResponseMetadataParsed(unittest.TestCase):
                 'HTTPHeaders': {}
             }
         }
-        self.assertEqual(parsed, expected)
+        assert parsed == expected
 
     def test_response_metadata_parsed_for_ec2(self):
         parser = parsers.EC2QueryParser()
@@ -158,11 +158,10 @@ class TestResponseMetadataParsed(unittest.TestCase):
                                'status_code': 200}, output_shape)
         # Note that the response metadata is normalized to match the query
         # protocol, even though this is not how it appears in the output.
-        self.assertEqual(
-            parsed, {'Str': 'myname',
+        assert parsed == {'Str': 'myname',
                      'ResponseMetadata': {'RequestId': 'request-id',
                                           'HTTPStatusCode': 200,
-                                          'HTTPHeaders': {}}})
+                                          'HTTPHeaders': {}}}
 
     def test_metadata_always_exists_for_ec2(self):
         # ResponseMetadata is used for more than just the request id. It
@@ -195,8 +194,7 @@ class TestResponseMetadataParsed(unittest.TestCase):
                 'HTTPHeaders': {}
             }
         }
-        self.assertEqual(
-            parsed, expected)
+        assert parsed == expected
 
     def test_response_metadata_on_json_request(self):
         parser = parsers.JSONParser()
@@ -218,11 +216,10 @@ class TestResponseMetadataParsed(unittest.TestCase):
                                'status_code': 200}, output_shape)
         # Note that the response metadata is normalized to match the query
         # protocol, even though this is not how it appears in the output.
-        self.assertEqual(
-            parsed, {'Str': 'mystring',
+        assert parsed == {'Str': 'mystring',
                      'ResponseMetadata': {'RequestId': 'request-id',
                                           'HTTPStatusCode': 200,
-                                          'HTTPHeaders': headers}})
+                                          'HTTPHeaders': headers}}
 
     def test_response_no_initial_event_stream(self):
         parser = parsers.JSONParser()
@@ -242,7 +239,7 @@ class TestResponseMetadataParsed(unittest.TestCase):
                 }
             })
         )
-        with self.assertRaises(parsers.ResponseParserError):
+        with pytest.raises(parsers.ResponseParserError):
             response_dict = {
                 'status_code': 200,
                 'headers': {},
@@ -282,7 +279,7 @@ class TestResponseMetadataParsed(unittest.TestCase):
                 'HTTPHeaders': headers
             }
         }
-        self.assertEqual(parsed, expected)
+        assert parsed == expected
 
     def test_response_metadata_on_rest_json_response(self):
         parser = parsers.RestJSONParser()
@@ -304,11 +301,10 @@ class TestResponseMetadataParsed(unittest.TestCase):
                                'status_code': 200}, output_shape)
         # Note that the response metadata is normalized to match the query
         # protocol, even though this is not how it appears in the output.
-        self.assertEqual(
-            parsed, {'Str': 'mystring',
+        assert parsed == {'Str': 'mystring',
                      'ResponseMetadata': {'RequestId': 'request-id',
                                           'HTTPStatusCode': 200,
-                                          'HTTPHeaders': headers}})
+                                          'HTTPHeaders': headers}}
 
     def test_metadata_always_exists_on_rest_json_response(self):
         # ResponseMetadata is used for more than just the request id. It
@@ -339,7 +335,7 @@ class TestResponseMetadataParsed(unittest.TestCase):
                 'HTTPHeaders': headers
             }
         }
-        self.assertEqual(parsed, expected)
+        assert parsed == expected
 
     def test_response_metadata_from_s3_response(self):
         # Even though s3 is a rest-xml service, it's response metadata
@@ -353,12 +349,11 @@ class TestResponseMetadataParsed(unittest.TestCase):
         parser = parsers.RestXMLParser()
         parsed = parser.parse(
             {'body': '', 'headers': headers, 'status_code': 200}, None)
-        self.assertEqual(
-            parsed,
-            {'ResponseMetadata': {'RequestId': 'request-id',
+        assert parsed == {
+            'ResponseMetadata': {'RequestId': 'request-id',
                                   'HostId': 'second-id',
                                   'HTTPStatusCode': 200,
-                                  'HTTPHeaders': headers}})
+                                  'HTTPHeaders': headers}}
 
     def test_metadata_always_exists_on_rest_xml_response(self):
         # ResponseMetadata is used for more than just the request id. It
@@ -374,7 +369,7 @@ class TestResponseMetadataParsed(unittest.TestCase):
                 'HTTPHeaders': headers
             }
         }
-        self.assertEqual(parsed, expected)
+        assert parsed == expected
 
 
 class TestHeaderResponseInclusion(unittest.TestCase):
@@ -414,8 +409,7 @@ class TestHeaderResponseInclusion(unittest.TestCase):
             'header2': 'bar',
         }
         # Response headers should be mapped as HTTPHeaders.
-        self.assertEqual(
-            parsed['ResponseMetadata']['HTTPHeaders'], parsed_headers)
+        assert parsed['ResponseMetadata']['HTTPHeaders'] == parsed_headers
 
     def test_can_always_json_serialize_headers(self):
         parser = self.create_parser()
@@ -432,8 +426,7 @@ class TestHeaderResponseInclusion(unittest.TestCase):
         # We've had the contract that you can json serialize a
         # response.  So we want to ensure that despite using a CustomHeaderDict
         # we can always JSON dumps the response metadata.
-        self.assertEqual(
-            json.loads(json.dumps(metadata))['HTTPHeaders']['header1'], 'foo')
+        assert json.loads(json.dumps(metadata))['HTTPHeaders']['header1'] == 'foo'
 
 
 class TestResponseParsingDatetimes(unittest.TestCase):
@@ -451,7 +444,7 @@ class TestResponseParsingDatetimes(unittest.TestCase):
             {'body': timestamp_as_float,
              'headers': [],
              'status_code': 200}, output_shape)
-        self.assertEqual(parsed, expected_parsed)
+        assert parsed == expected_parsed
 
 
 class TestResponseParserFactory(unittest.TestCase):
@@ -460,12 +453,12 @@ class TestResponseParserFactory(unittest.TestCase):
 
     def test_rest_parser(self):
         parser = self.factory.create_parser('rest-xml')
-        self.assertTrue(isinstance(parser, parsers.BaseRestParser))
-        self.assertTrue(isinstance(parser, parsers.BaseXMLResponseParser))
+        assert isinstance(parser, parsers.BaseRestParser)
+        assert isinstance(parser, parsers.BaseXMLResponseParser)
 
     def test_json_parser(self):
         parser = self.factory.create_parser('json')
-        self.assertTrue(isinstance(parser, parsers.BaseJSONParser))
+        assert isinstance(parser, parsers.BaseJSONParser)
 
 
 class TestCanDecorateResponseParsing(unittest.TestCase):
@@ -487,7 +480,7 @@ class TestCanDecorateResponseParsing(unittest.TestCase):
         parsed = parser.parse(
             self.create_request_dict(with_body=hello_world_b64),
             output_shape)
-        self.assertEqual(parsed, expected_parsed)
+        assert parsed == expected_parsed
 
     def test_can_decorate_scalar_parsing(self):
         output_shape = model.Shape(shape_name='BlobType',
@@ -503,7 +496,7 @@ class TestCanDecorateResponseParsing(unittest.TestCase):
         parsed = parser.parse(
             self.create_request_dict(with_body=hello_world_b64),
             output_shape)
-        self.assertEqual(parsed, expected_parsed)
+        assert parsed == expected_parsed
 
     def test_can_decorate_timestamp_parser(self):
         output_shape = model.Shape(shape_name='datetime',
@@ -520,7 +513,7 @@ class TestCanDecorateResponseParsing(unittest.TestCase):
         parsed = parser.parse(
             self.create_request_dict(with_body=timestamp_as_int),
             output_shape)
-        self.assertEqual(parsed, expected_parsed)
+        assert parsed == expected_parsed
 
 
 class TestHandlesNoOutputShape(unittest.TestCase):
@@ -533,11 +526,10 @@ class TestHandlesNoOutputShape(unittest.TestCase):
         parsed = parser.parse(
             {'body': b'', 'headers': headers, 'status_code': 200},
             output_shape)
-        self.assertEqual(
-            parsed,
-            {'ResponseMetadata': {'RequestId': 'request-id',
+        assert parsed == {
+            'ResponseMetadata': {'RequestId': 'request-id',
                                   'HTTPStatusCode': 200,
-                                  'HTTPHeaders': headers}})
+                                  'HTTPHeaders': headers}}
 
     def test_empty_rest_xml_response(self):
         # This is the format used by cloudfront, route53.
@@ -547,11 +539,10 @@ class TestHandlesNoOutputShape(unittest.TestCase):
         parsed = parser.parse(
             {'body': b'', 'headers': headers, 'status_code': 200},
             output_shape)
-        self.assertEqual(
-            parsed,
-            {'ResponseMetadata': {'RequestId': 'request-id',
+        assert parsed == {
+            'ResponseMetadata': {'RequestId': 'request-id',
                                   'HTTPStatusCode': 200,
-                                  'HTTPHeaders': headers}})
+                                  'HTTPHeaders': headers}}
 
     def test_empty_query_response(self):
         body = (
@@ -566,11 +557,10 @@ class TestHandlesNoOutputShape(unittest.TestCase):
         parsed = parser.parse(
             {'body': body, 'headers': {}, 'status_code': 200},
             output_shape)
-        self.assertEqual(
-            parsed,
-            {'ResponseMetadata': {'RequestId': 'request-id',
+        assert parsed == {
+            'ResponseMetadata': {'RequestId': 'request-id',
                                   'HTTPStatusCode': 200,
-                                  'HTTPHeaders': {}}})
+                                  'HTTPHeaders': {}}}
 
     def test_empty_json_response(self):
         headers = {'x-amzn-requestid': 'request-id'}
@@ -580,11 +570,10 @@ class TestHandlesNoOutputShape(unittest.TestCase):
         parsed = parser.parse(
             {'body': b'', 'headers': headers, 'status_code': 200},
             output_shape)
-        self.assertEqual(
-            parsed,
-            {'ResponseMetadata': {'RequestId': 'request-id',
+        assert parsed == {
+            'ResponseMetadata': {'RequestId': 'request-id',
                                   'HTTPStatusCode': 200,
-                                  'HTTPHeaders': headers}})
+                                  'HTTPHeaders': headers}}
 
 
 class TestHandlesInvalidXMLResponses(unittest.TestCase):
@@ -597,8 +586,8 @@ class TestHandlesInvalidXMLResponses(unittest.TestCase):
         parser = parsers.QueryParser()
         output_shape = None
         # The XML body should be in the error message.
-        with six.assertRaisesRegex(self, parsers.ResponseParserError,
-                                   '<DeleteTagsResponse'):
+        with pytest.raises(parsers.ResponseParserError,
+                                   match='<DeleteTagsResponse'):
             parser.parse(
                 {'body': invalid_xml, 'headers': {}, 'status_code': 200},
                 output_shape)
@@ -637,7 +626,7 @@ class TestRESTXMLResponses(unittest.TestCase):
             {'body': body, 'headers': headers, 'status_code': 200},
             output_shape)
         # Ensure the first element is used out of the list.
-        self.assertEqual(parsed['Foo'], {'Bar': 'first_value'})
+        assert parsed['Foo'] == {'Bar': 'first_value'}
 
 
 class TestEventStreamParsers(unittest.TestCase):
@@ -753,7 +742,7 @@ class TestEventStreamParsers(unittest.TestCase):
                 }
             }
         }
-        self.assertEqual(parsed, expected)
+        assert parsed == expected
 
     def test_parses_event_bad_xml(self):
         headers = {
@@ -767,19 +756,19 @@ class TestEventStreamParsers(unittest.TestCase):
                 'Stats': {}
             }
         }
-        self.assertEqual(parsed, expected)
+        assert parsed == expected
 
     def test_parses_event_blob(self):
         headers = {':event-type': 'EventB'}
         parsed = self.parse_event(headers, b'blob')
         expected = {'EventB': {'Body': b'blob'}}
-        self.assertEqual(parsed, expected)
+        assert parsed == expected
 
     def test_parses_event_string(self):
         headers = {':event-type': 'EventC'}
         parsed = self.parse_event(headers, b'blob')
         expected = {'EventC': {'Body': u'blob'}}
-        self.assertEqual(parsed, expected)
+        assert parsed == expected
 
     def test_parses_payload_implicit(self):
         headers = {
@@ -800,7 +789,7 @@ class TestEventStreamParsers(unittest.TestCase):
                 'IntField': 1234
             }
         }
-        self.assertEqual(parsed, expected)
+        assert parsed == expected
 
     def test_parses_error_event(self):
         error_code = 'client/SomeError'
@@ -818,7 +807,7 @@ class TestEventStreamParsers(unittest.TestCase):
                 'Message': error_message
             }
         }
-        self.assertEqual(parsed, expected)
+        assert parsed == expected
 
     def test_parses_exception_event(self):
         self.parser = parsers.EventStreamJSONParser()
@@ -835,7 +824,7 @@ class TestEventStreamParsers(unittest.TestCase):
                 'Message': 'You did something wrong'
             }
         }
-        self.assertEqual(parsed, expected)
+        assert parsed == expected
 
     def test_parses_event_json(self):
         self.parser = parsers.EventStreamJSONParser()
@@ -853,7 +842,7 @@ class TestEventStreamParsers(unittest.TestCase):
                 'IntField': 1234
             }
         }
-        self.assertEqual(parsed, expected)
+        assert parsed == expected
 
 
 class TestParseErrorResponses(unittest.TestCase):
@@ -892,12 +881,12 @@ class TestParseErrorResponses(unittest.TestCase):
         parsed = parser.parse(response, None)
         # Even (especially) on an error condition, the
         # ResponseMetadata should be populated.
-        self.assertIn('ResponseMetadata', parsed)
-        self.assertEqual(parsed['ResponseMetadata']['RequestId'], 'request-id')
+        assert 'ResponseMetadata' in parsed
+        assert parsed['ResponseMetadata']['RequestId'] == 'request-id'
 
-        self.assertIn('Error', parsed)
-        self.assertEqual(parsed['Error']['Message'], 'this is a message')
-        self.assertEqual(parsed['Error']['Code'], 'ValidationException')
+        assert 'Error' in parsed
+        assert parsed['Error']['Message'] == 'this is a message'
+        assert parsed['Error']['Code'] == 'ValidationException'
 
     def test_response_metadata_errors_alternate_form_json_protocol(self):
         # Sometimes there is no '#' in the __type.  We need to be
@@ -914,9 +903,9 @@ class TestParseErrorResponses(unittest.TestCase):
             }
         }
         parsed = parser.parse(response, None)
-        self.assertIn('Error', parsed)
-        self.assertEqual(parsed['Error']['Message'], 'this is a message')
-        self.assertEqual(parsed['Error']['Code'], 'ValidationException')
+        assert 'Error' in parsed
+        assert parsed['Error']['Message'] == 'this is a message'
+        assert parsed['Error']['Code'] == 'ValidationException'
 
     def test_parse_error_response_for_query_protocol(self):
         body = (
@@ -932,12 +921,12 @@ class TestParseErrorResponses(unittest.TestCase):
         parser = parsers.QueryParser()
         parsed = parser.parse({
             'body': body, 'headers': {}, 'status_code': 400}, None)
-        self.assertIn('Error', parsed)
-        self.assertEqual(parsed['Error'], {
+        assert 'Error' in parsed
+        assert parsed['Error'] == {
             'Code': 'InvalidInput',
             'Message': 'ARN asdf is not valid.',
             'Type': 'Sender',
-        })
+        }
 
     def test_can_parse_sdb_error_response_query_protocol(self):
         body = (
@@ -954,16 +943,16 @@ class TestParseErrorResponses(unittest.TestCase):
         parser = parsers.QueryParser()
         parsed = parser.parse({
             'body': body, 'headers': {}, 'status_code': 500}, None)
-        self.assertIn('Error', parsed)
-        self.assertEqual(parsed['Error'], {
+        assert 'Error' in parsed
+        assert parsed['Error'] == {
             'Code': '1',
             'Message': 'msg'
-        })
-        self.assertEqual(parsed['ResponseMetadata'], {
+        }
+        assert parsed['ResponseMetadata'] == {
             'RequestId': 'abc-123',
             'HTTPStatusCode': 500,
             'HTTPHeaders': {}
-        })
+        }
 
     def test_can_parser_ec2_errors(self):
         body = (
@@ -980,11 +969,11 @@ class TestParseErrorResponses(unittest.TestCase):
         parser = parsers.EC2QueryParser()
         parsed = parser.parse({
             'body': body, 'headers': {}, 'status_code': 400}, None)
-        self.assertIn('Error', parsed)
-        self.assertEqual(parsed['Error'], {
+        assert 'Error' in parsed
+        assert parsed['Error'] == {
             'Code': 'InvalidInstanceID.NotFound',
             'Message': 'The instance ID i-12345 does not exist',
-        })
+        }
 
     def test_can_parse_rest_xml_errors(self):
         body = (
@@ -1000,12 +989,12 @@ class TestParseErrorResponses(unittest.TestCase):
         parser = parsers.RestXMLParser()
         parsed = parser.parse({
             'body': body, 'headers': {}, 'status_code': 400}, None)
-        self.assertIn('Error', parsed)
-        self.assertEqual(parsed['Error'], {
+        assert 'Error' in parsed
+        assert parsed['Error'] == {
             'Code': 'NoSuchHostedZone',
             'Message': 'No hosted zone found with ID: foobar',
             'Type': 'Sender',
-        })
+        }
 
     def test_can_parse_rest_json_errors(self):
         body = (
@@ -1018,11 +1007,11 @@ class TestParseErrorResponses(unittest.TestCase):
         parser = parsers.RestJSONParser()
         parsed = parser.parse({
             'body': body, 'headers': headers, 'status_code': 400}, None)
-        self.assertIn('Error', parsed)
-        self.assertEqual(parsed['Error'], {
+        assert 'Error' in parsed
+        assert parsed['Error'] == {
             'Code': 'ResourceNotFoundException',
             'Message': 'Function not found: foo',
-        })
+        }
 
     def test_error_response_with_no_body_rest_json(self):
         parser = parsers.RestJSONParser()
@@ -1032,15 +1021,15 @@ class TestParseErrorResponses(unittest.TestCase):
         parsed = parser.parse({'body': response, 'headers': headers,
                                'status_code': 504}, output_shape)
 
-        self.assertIn('Error', parsed)
-        self.assertEqual(parsed['Error'], {
+        assert 'Error' in parsed
+        assert parsed['Error'] == {
             'Code': '504',
             'Message': 'Gateway Timeout'
-        })
-        self.assertEqual(parsed['ResponseMetadata'], {
+        }
+        assert parsed['ResponseMetadata'] == {
             'HTTPStatusCode': 504,
             'HTTPHeaders': headers
-        })
+        }
 
     def test_error_response_with_string_body_rest_json(self):
         parser = parsers.RestJSONParser()
@@ -1050,15 +1039,15 @@ class TestParseErrorResponses(unittest.TestCase):
         parsed = parser.parse({'body': response, 'headers': headers,
                                'status_code': 413}, output_shape)
 
-        self.assertIn('Error', parsed)
-        self.assertEqual(parsed['Error'], {
+        assert 'Error' in parsed
+        assert parsed['Error'] == {
             'Code': '413',
             'Message': response.decode('utf-8')
-        })
-        self.assertEqual(parsed['ResponseMetadata'], {
+        }
+        assert parsed['ResponseMetadata'] == {
             'HTTPStatusCode': 413,
             'HTTPHeaders': headers
-        })
+        }
 
     def test_error_response_with_xml_body_rest_json(self):
         parser = parsers.RestJSONParser()
@@ -1072,15 +1061,15 @@ class TestParseErrorResponses(unittest.TestCase):
         parsed = parser.parse({'body': response, 'headers': headers,
                                'status_code': 403}, output_shape)
 
-        self.assertIn('Error', parsed)
-        self.assertEqual(parsed['Error'], {
+        assert 'Error' in parsed
+        assert parsed['Error'] == {
             'Code': '403',
             'Message': response.decode('utf-8')
-        })
-        self.assertEqual(parsed['ResponseMetadata'], {
+        }
+        assert parsed['ResponseMetadata'] == {
             'HTTPStatusCode': 403,
             'HTTPHeaders': headers
-        })
+        }
 
     def test_s3_error_response(self):
         body = (
@@ -1099,20 +1088,20 @@ class TestParseErrorResponses(unittest.TestCase):
         parser = parsers.RestXMLParser()
         parsed = parser.parse(
             {'body': body, 'headers': headers, 'status_code': 400}, None)
-        self.assertIn('Error', parsed)
-        self.assertEqual(parsed['Error'], {
+        assert 'Error' in parsed
+        assert parsed['Error'] == {
             'Code': 'NoSuchBucket',
             'Message': 'error message',
             'BucketName': 'asdf',
             # We don't want the RequestId/HostId because they're already
             # present in the ResponseMetadata key.
-        })
-        self.assertEqual(parsed['ResponseMetadata'], {
+        }
+        assert parsed['ResponseMetadata'] == {
             'RequestId': 'request-id',
             'HostId': 'second-id',
             'HTTPStatusCode': 400,
             'HTTPHeaders': headers
-        })
+        }
 
     def test_s3_error_response_with_no_body(self):
         # If you try to HeadObject a key that does not exist,
@@ -1127,17 +1116,17 @@ class TestParseErrorResponses(unittest.TestCase):
         parser = parsers.RestXMLParser()
         parsed = parser.parse(
             {'body': body, 'headers': headers, 'status_code': 404}, None)
-        self.assertIn('Error', parsed)
-        self.assertEqual(parsed['Error'], {
+        assert 'Error' in parsed
+        assert parsed['Error'] == {
             'Code': '404',
             'Message': 'Not Found',
-        })
-        self.assertEqual(parsed['ResponseMetadata'], {
+        }
+        assert parsed['ResponseMetadata'] == {
             'RequestId': 'request-id',
             'HostId': 'second-id',
             'HTTPStatusCode': 404,
             'HTTPHeaders': headers
-        })
+        }
 
     def test_can_parse_glacier_error_response(self):
         body = (b'{"code":"AccessDeniedException","type":"Client","message":'
@@ -1148,8 +1137,8 @@ class TestParseErrorResponses(unittest.TestCase):
         parser = parsers.RestJSONParser()
         parsed = parser.parse(
             {'body': body, 'headers': headers, 'status_code': 400}, None)
-        self.assertEqual(parsed['Error'], {'Message': 'Access denied',
-                                           'Code': 'AccessDeniedException'})
+        assert parsed['Error'] == {'Message': 'Access denied',
+                                           'Code': 'AccessDeniedException'}
 
     def test_can_parse_restjson_error_code(self):
         body = b'''{
@@ -1165,8 +1154,8 @@ class TestParseErrorResponses(unittest.TestCase):
         parser = parsers.RestJSONParser()
         parsed = parser.parse(
             {'body': body, 'headers': headers, 'status_code': 400}, None)
-        self.assertEqual(parsed['Error'], {'Message': 'blah',
-                                           'Code': 'WasUnableToParseThis'})
+        assert parsed['Error'] == {'Message': 'blah',
+                                           'Code': 'WasUnableToParseThis'}
 
     def test_can_parse_with_case_insensitive_keys(self):
         body = (b'{"Code":"AccessDeniedException","type":"Client","Message":'
@@ -1177,8 +1166,8 @@ class TestParseErrorResponses(unittest.TestCase):
         parser = parsers.RestJSONParser()
         parsed = parser.parse(
             {'body': body, 'headers': headers, 'status_code': 400}, None)
-        self.assertEqual(parsed['Error'], {'Message': 'Access denied',
-                                           'Code': 'AccessDeniedException'})
+        assert parsed['Error'] == {'Message': 'Access denied',
+                                           'Code': 'AccessDeniedException'}
 
     def test_can_parse_rest_json_modeled_fields(self):
         body = (
@@ -1195,7 +1184,7 @@ class TestParseErrorResponses(unittest.TestCase):
         expected_parsed = {
             'ModeledField': 'Some modeled field',
         }
-        self.assertEqual(parsed, expected_parsed)
+        assert parsed == expected_parsed
 
     def test_can_parse_rest_xml_modeled_fields(self):
         parser = parsers.RestXMLParser()
@@ -1216,7 +1205,7 @@ class TestParseErrorResponses(unittest.TestCase):
         expected_parsed = {
             'ModeledField': 'Some modeled field',
         }
-        self.assertEqual(parsed, expected_parsed)
+        assert parsed == expected_parsed
 
     def test_can_parse_ec2_modeled_fields(self):
         body = (
@@ -1236,7 +1225,7 @@ class TestParseErrorResponses(unittest.TestCase):
         expected_parsed = {
             'ModeledField': 'Some modeled field',
         }
-        self.assertEqual(parsed, expected_parsed)
+        assert parsed == expected_parsed
 
     def test_can_parse_query_modeled_fields(self):
         parser = parsers.QueryParser()
@@ -1257,7 +1246,7 @@ class TestParseErrorResponses(unittest.TestCase):
         expected_parsed = {
             'ModeledField': 'Some modeled field',
         }
-        self.assertEqual(parsed, expected_parsed)
+        assert parsed == expected_parsed
 
     def test_can_parse_json_modeled_fields(self):
         body = (
@@ -1275,7 +1264,7 @@ class TestParseErrorResponses(unittest.TestCase):
         expected_parsed = {
             'ModeledField': 'Some modeled field',
         }
-        self.assertEqual(parsed, expected_parsed)
+        assert parsed == expected_parsed
 
     def test_can_parse_route53_with_missing_message(self):
         # The message isn't always in the XML response (or even the headers).
@@ -1295,10 +1284,10 @@ class TestParseErrorResponses(unittest.TestCase):
         parsed = parser.parse({
             'body': body, 'headers': {}, 'status_code': 400}, None)
         error = parsed['Error']
-        self.assertEqual(error['Code'], 'InvalidInput')
+        assert error['Code'] == 'InvalidInput'
         # Even though there's no <Message /> we should
         # still populate an empty string.
-        self.assertEqual(error['Message'], '')
+        assert error['Message'] == ''
 
 
 def test_can_handle_generic_error_message():
@@ -1320,6 +1309,6 @@ def _assert_parses_generic_error(parser, body):
     # html error page.  We should be able to handle this case.
     parsed = parser.parse({
         'body': body, 'headers': {}, 'status_code': 503}, None)
-    assert parsed['Error'] == \
-        {'Code': '503', 'Message': 'Service Unavailable'}
+    assert parsed['Error'] == {
+        'Code': '503', 'Message': 'Service Unavailable'}
     assert parsed['ResponseMetadata']['HTTPStatusCode'] == 503
