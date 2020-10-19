@@ -17,6 +17,7 @@ import json
 import pprint
 import logging
 import difflib
+import pytest
 from tests import create_session
 
 import botocore.session
@@ -35,54 +36,7 @@ SPECIAL_CASES = [
 ]
 
 
-def _test_parsed_response(xmlfile, response_body, operation_model, expected):
-    response = {
-        'body': response_body,
-        'status_code': 200,
-        'headers': {}
-    }
-    for case in SPECIAL_CASES:
-        if case in xmlfile:
-            print("SKIP: %s" % xmlfile)
-            return
-    if 'errors' in xmlfile:
-        response['status_code'] = 400
-    # Handle the special cased __headers__ key if it exists.
-    if b'__headers__' in response_body:
-        loaded = json.loads(response_body.decode('utf-8'))
-        response['headers'] = loaded.pop('__headers__')
-        response['body'] = json.dumps(loaded).encode('utf-8')
 
-    protocol = operation_model.service_model.protocol
-    parser_cls = parsers.PROTOCOL_PARSERS[protocol]
-    parser = parser_cls(timestamp_parser=lambda x: x)
-    parsed = parser.parse(response, operation_model.output_shape)
-    parsed = _convert_bytes_to_str(parsed)
-    expected['ResponseMetadata']['HTTPStatusCode'] = response['status_code']
-    expected['ResponseMetadata']['HTTPHeaders'] = response['headers']
-
-    d2 = parsed
-    d1 = expected
-
-    if d1 != d2:
-        log.debug('-' * 40)
-        log.debug("XML FILE:\n" + xmlfile)
-        log.debug('-' * 40)
-        log.debug("ACTUAL:\n" + pprint.pformat(parsed))
-        log.debug('-' * 40)
-        log.debug("EXPECTED:\n" + pprint.pformat(expected))
-    if not d1 == d2:
-        # Borrowed from assertDictEqual, though this doesn't
-        # handle the case when unicode literals are used in one
-        # dict but not in the other (and we want to consider them
-        # as being equal).
-        print(d1)
-        print()
-        print(d2)
-        pretty_d1 = pprint.pformat(d1, width=1).splitlines()
-        pretty_d2 = pprint.pformat(d2, width=1).splitlines()
-        diff = ('\n' + '\n'.join(difflib.ndiff(pretty_d1, pretty_d2)))
-        raise AssertionError("Dicts are not equal:\n%s" % diff)
 
 
 def _convert_bytes_to_str(parsed):
@@ -184,6 +138,7 @@ def test_json_errors_parsing():
 
 
 def _uhg_test_json_parsing():
+    test_cases = []
     input_path = os.path.join(os.path.dirname(__file__), 'json')
     input_path = os.path.join(input_path, 'inputs')
     output_path = os.path.join(os.path.dirname(__file__), 'json')
@@ -202,10 +157,64 @@ def _uhg_test_json_parsing():
             operation_model = _get_operation_model(service_model, jsonfile)
             with open(jsonfile, 'rb') as f:
                 raw_response_body = f.read()
+            test_cases.append((jsonfile, raw_response_body, operation_model, expected))
+            """
             yield _test_parsed_response, jsonfile, \
                 raw_response_body, operation_model, expected
+            """
             # TODO: handle the __headers crap.
+    return test_cases
 
+
+@pytest.mark.parametrize("xmlfile, response_body, operation_model, expected", _uhg_test_json_parsing())
+def _test_parsed_response(xmlfile, response_body, operation_model, expected):
+    response = {
+        'body': response_body,
+        'status_code': 200,
+        'headers': {}
+    }
+    for case in SPECIAL_CASES:
+        if case in xmlfile:
+            print("SKIP: %s" % xmlfile)
+            return
+    if 'errors' in xmlfile:
+        response['status_code'] = 400
+    # Handle the special cased __headers__ key if it exists.
+    if b'__headers__' in response_body:
+        loaded = json.loads(response_body.decode('utf-8'))
+        response['headers'] = loaded.pop('__headers__')
+        response['body'] = json.dumps(loaded).encode('utf-8')
+
+    protocol = operation_model.service_model.protocol
+    parser_cls = parsers.PROTOCOL_PARSERS[protocol]
+    parser = parser_cls(timestamp_parser=lambda x: x)
+    parsed = parser.parse(response, operation_model.output_shape)
+    parsed = _convert_bytes_to_str(parsed)
+    expected['ResponseMetadata']['HTTPStatusCode'] = response['status_code']
+    expected['ResponseMetadata']['HTTPHeaders'] = response['headers']
+
+    d2 = parsed
+    d1 = expected
+
+    if d1 != d2:
+        log.debug('-' * 40)
+        log.debug("XML FILE:\n" + xmlfile)
+        log.debug('-' * 40)
+        log.debug("ACTUAL:\n" + pprint.pformat(parsed))
+        log.debug('-' * 40)
+        log.debug("EXPECTED:\n" + pprint.pformat(expected))
+    if not d1 == d2:
+        # Borrowed from assertDictEqual, though this doesn't
+        # handle the case when unicode literals are used in one
+        # dict but not in the other (and we want to consider them
+        # as being equal).
+        print(d1)
+        print()
+        print(d2)
+        pretty_d1 = pprint.pformat(d1, width=1).splitlines()
+        pretty_d2 = pprint.pformat(d2, width=1).splitlines()
+        diff = ('\n' + '\n'.join(difflib.ndiff(pretty_d1, pretty_d2)))
+        raise AssertionError("Dicts are not equal:\n%s" % diff)
 
 #class TestHeaderParsing(unittest.TestCase):
 #
