@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 from tests import create_session, unittest
 
+import pytest
 from tests import mock
 
 from botocore.client import ClientEndpointBridge
@@ -445,10 +446,11 @@ def _get_patched_session():
         environ['AWS_CONFIG_FILE'] = 'no-exist-foo'
         session = create_session()
     return session
+    
 
-
-class TestRegions(unittest.TestCase):
-    def test_known_endpoints(self):
+class TestRegions(object):
+    @pytest.mark.parametrize("region_name,service_dict", KNOWN_REGIONS.items())
+    def test_known_endpoints(self, region_name, service_dict):
         # Verify the actual values from the partition files.  While
         # TestEndpointHeuristics verified the generic functionality given
         # any endpoints file, this test actually verifies the partition
@@ -457,18 +459,17 @@ class TestRegions(unittest.TestCase):
         # regressions as the endpoint data logic evolves.
         resolver = _get_patched_session()._get_internal_component(
             'endpoint_resolver')
-        for region_name, service_dict in KNOWN_REGIONS.items():
-            for service_name, endpoint in service_dict.items():
-                self._test_single_service_region(service_name,
-                                                 region_name, endpoint,
-                                                 resolver)
+        for service_name, endpoint in service_dict.items():
+            self._test_single_service_region(service_name,
+                                        region_name, endpoint,
+                                        resolver)
 
     def _test_single_service_region(self, service_name, region_name,
                                     expected_endpoint, resolver):
         bridge = ClientEndpointBridge(resolver, None, None)
         result = bridge.resolve(service_name, region_name)
         expected = 'https://%s' % expected_endpoint
-        self.assertEqual(result['endpoint_url'], expected)
+        assert result['endpoint_url'] == expected
 
     # Ensure that all S3 regions use s3v4 instead of v4
     def test_all_s3_endpoints_have_s3v4(self):
@@ -498,7 +499,7 @@ class TestRegions(unittest.TestCase):
     def test_non_partition_endpoint_requires_region(self):
         resolver = _get_patched_session()._get_internal_component(
             'endpoint_resolver')
-        with self.assertRaises(NoRegionError):
+        with pytest.raises(NoRegionError):
             resolver.construct_endpoint('ec2')
 
 
@@ -523,10 +524,7 @@ class TestEndpointResolution(BaseSessionTest):
         client, stubber = self.create_stubbed_client('s3', 'us-east-2')
         stubber.add_response()
         client.list_buckets()
-        self.assertEqual(
-            stubber.requests[0].url,
-            'https://s3.us-east-2.amazonaws.com/'
-        )
+        assert stubber.requests[0].url == 'https://s3.us-east-2.amazonaws.com/'
 
     def test_regionalized_client_with_unknown_region(self):
         client, stubber = self.create_stubbed_client('s3', 'not-real')
@@ -534,23 +532,16 @@ class TestEndpointResolution(BaseSessionTest):
         client.list_buckets()
         # Validate we don't fall back to partition endpoint for
         # regionalized services.
-        self.assertEqual(
-            stubber.requests[0].url,
-            'https://s3.not-real.amazonaws.com/'
-        )
+        assert stubber.requests[0].url == 'https://s3.not-real.amazonaws.com/'
 
     def test_unregionalized_client_endpoint_resolution(self):
         client, stubber = self.create_stubbed_client('iam', 'us-west-2')
         stubber.add_response(body=self.xml_response)
         client.list_roles()
-        self.assertTrue(
-            stubber.requests[0].url.startswith('https://iam.amazonaws.com/')
-        )
+        assert stubber.requests[0].url.startswith('https://iam.amazonaws.com/')
 
     def test_unregionalized_client_with_unknown_region(self):
         client, stubber = self.create_stubbed_client('iam', 'not-real')
         stubber.add_response(body=self.xml_response)
         client.list_roles()
-        self.assertTrue(
-            stubber.requests[0].url.startswith('https://iam.amazonaws.com/')
-        )
+        assert stubber.requests[0].url.startswith('https://iam.amazonaws.com/')
