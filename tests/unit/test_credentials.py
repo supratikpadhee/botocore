@@ -74,8 +74,8 @@ def path(filename):
 class TestCredentials(BaseEnvVar):
     def _ensure_credential_is_normalized_as_unicode(self, access, secret):
         c = credentials.Credentials(access, secret)
-        assert isinstance(c.access_key, type(u'u'))
-        assert isinstance(c.secret_key, type(u'u'))
+        assert isinstance(c.access_key, str)
+        assert isinstance(c.secret_key, str)
 
     def test_detect_nonascii_character(self):
         self._ensure_credential_is_normalized_as_unicode(
@@ -132,7 +132,7 @@ class TestRefreshableCredentials(TestCredentials):
         # ago currently.  That would mean we don't need a refresh.
         self.mock_time.return_value = (
             datetime.now(tzlocal()) - timedelta(minutes=60))
-        assert not self.creds.refresh_needed()
+        assert self.creds.refresh_needed() is False
 
         assert self.creds.access_key == 'ORIGINAL-ACCESS'
         assert self.creds.secret_key == 'ORIGINAL-SECRET'
@@ -143,7 +143,7 @@ class TestRefreshableCredentials(TestCredentials):
         # signing process.
         self.mock_time.return_value = (
             datetime.now(tzlocal()) - timedelta(minutes=60))
-        assert not self.creds.refresh_needed()
+        assert self.creds.refresh_needed() is False
         credential_set = self.creds.get_frozen_credentials()
         assert credential_set.access_key == 'ORIGINAL-ACCESS'
         assert credential_set.secret_key == 'ORIGINAL-SECRET'
@@ -1006,7 +1006,7 @@ class TestEnvVar(BaseEnvVar):
         # Because we treat empty env vars the same as not being provided,
         # we should return static credentials and not a refreshable
         # credential.
-        assert not isinstance(creds, credentials.RefreshableCredentials)
+        assert isinstance(creds, credentials.RefreshableCredentials) is False
         assert creds.access_key == 'foo'
         assert creds.secret_key == 'bar'
         assert creds.token == 'baz'
@@ -1207,8 +1207,8 @@ class TestEnvVar(BaseEnvVar):
         }
         provider = credentials.EnvProvider(environ)
         creds = provider.load()
-        assert not isinstance(creds, credentials.RefreshableCredentials)
-        assert isinstance(creds, credentials.Credentials)
+        assert isinstance(creds, credentials.RefreshableCredentials) is False
+        assert isinstance(creds, credentials.Credentials) is True
 
     def test_credentials_do_not_become_refreshable(self):
         environ = {
@@ -1235,7 +1235,7 @@ class TestEnvVar(BaseEnvVar):
         assert frozen.access_key == 'foo'
         assert frozen.secret_key == 'bar'
         assert frozen.token == 'baz'
-        assert not isinstance(creds, credentials.RefreshableCredentials)
+        assert isinstance(creds, credentials.RefreshableCredentials) is False
 
     def test_credentials_throw_error_if_expiry_goes_away(self):
         expiry_time = datetime.now(tzlocal()) - timedelta(hours=1)
@@ -1269,7 +1269,6 @@ class TestSharedCredentialsProvider(BaseEnvVar):
             creds_filename='~/.aws/creds', profile_name='default',
             ini_parser=self.ini_parser)
         creds = provider.load()
-        self.assertIsNotNone(creds)
         assert creds is not None
         assert creds.access_key == 'foo'
         assert creds.secret_key == 'bar'
@@ -1606,7 +1605,7 @@ class CredentialResolverTest(BaseEnvVar):
         # *not* have been called because new_provider already returned
         # a non-None response.
         self.provider1.load.assert_called_with()
-        assert not self.provider2.called
+        assert self.provider2.called is False
 
     def test_inject_provider_before_existing(self):
         new_provider = mock.Mock()
@@ -1634,7 +1633,7 @@ class CredentialResolverTest(BaseEnvVar):
         assert creds.access_key == 'd'
         assert creds.secret_key == 'e'
         assert creds.token == 'f'
-        assert not self.provider1.load.called
+        assert self.provider1.load.called is False
         self.provider2.load.assert_called_with()
 
     def test_provider_unknown(self):
@@ -1703,7 +1702,7 @@ class TestCreateCredentialResolver(BaseEnvVar):
     def test_default_cache(self):
         resolver = credentials.create_credential_resolver(self.session)
         cache = resolver.get_provider('assume-role').cache
-        assert isinstance (cache, dict)
+        assert isinstance(cache, dict)
         assert cache == {}
 
     def test_custom_cache(self):
@@ -1712,7 +1711,7 @@ class TestCreateCredentialResolver(BaseEnvVar):
             self.session, custom_cache
         )
         cache = resolver.get_provider('assume-role').cache
-        assert cache is  custom_cache
+        assert cache is custom_cache
 
 
 class TestCanonicalNameSourceProvider(BaseEnvVar):
@@ -1740,7 +1739,7 @@ class TestCanonicalNameSourceProvider(BaseEnvVar):
         ])
         self.custom_provider1.load.return_value = self.fake_creds
         result = provider.source_credentials('cUsToMpRoViDeR1')
-        assert result is  self.fake_creds
+        assert result is self.fake_creds
 
     def test_load_unknown_canonical_name_raises_error(self):
         provider = credentials.CanonicalNameCredentialSourcer(providers=[
@@ -1769,7 +1768,7 @@ class TestCanonicalNameSourceProvider(BaseEnvVar):
         assert creds.access_key == 'a'
         assert creds.secret_key == 'b'
         assert creds.token == 'c'
-        assert not provider.load.called
+        assert provider.load.called is False
 
     def _assert_returns_creds_if_assume_role_not_used(self, provider):
         assume_role_provider = mock.Mock(spec=AssumeRoleProvider)
@@ -2743,7 +2742,7 @@ class TestRefreshLogic(unittest.TestCase):
             mandatory_refresh=7,
             refresh_function=fail_refresh
         )
-        with pytest.raises(Exception, match='refresh failed'):
+        with pytest.raises(Exception, match=r'refresh failed'):
             creds.get_frozen_credentials()
 
     def test_exception_propogated_on_expired_credentials(self):
@@ -2756,7 +2755,7 @@ class TestRefreshLogic(unittest.TestCase):
             mandatory_refresh=7,
             refresh_function=fail_refresh
         )
-        with pytest.raises(Exception, match='refresh failed'):
+        with pytest.raises(Exception, match=r'refresh failed'):
             # Because credentials are actually expired, any
             # failure to refresh should be propagated.
             creds.get_frozen_credentials()
@@ -3154,7 +3153,6 @@ class TestProcessProvider(BaseEnvVar):
         assert creds is not None
         assert creds.access_key == 'foo'
         assert creds.secret_key == 'bar'
-        assert creds.token is None
         assert creds.token is None
         assert creds.method == 'custom-process'
 

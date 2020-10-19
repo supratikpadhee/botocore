@@ -345,8 +345,8 @@ class TestSigner(BaseSignerTest):
         with mock.patch.dict(botocore.auth.AUTH_TYPE_MAPS, auth_types):
             self.signer.sign('operation_name', self.request,
                              signing_type='standard')
-        assert not post_auth.called
-        assert not query_auth.called
+        assert post_auth.called is False
+        assert query_auth.called is False
         auth.assert_called_with(
             credentials=ReadOnlyCredentials('key', 'secret', None),
             service_name='signing_name',
@@ -365,8 +365,8 @@ class TestSigner(BaseSignerTest):
         with mock.patch.dict(botocore.auth.AUTH_TYPE_MAPS, auth_types):
             self.signer.sign('operation_name', self.request,
                              signing_type='presign-url')
-        assert not post_auth.called
-        assert not auth.called
+        assert post_auth.called is False
+        assert auth.called is False
         query_auth.assert_called_with(
             credentials=ReadOnlyCredentials('key', 'secret', None),
             service_name='signing_name',
@@ -385,8 +385,8 @@ class TestSigner(BaseSignerTest):
         with mock.patch.dict(botocore.auth.AUTH_TYPE_MAPS, auth_types):
             self.signer.sign('operation_name', self.request,
                              signing_type='presign-post')
-        assert not auth.called
-        assert not query_auth.called
+        assert auth.called is False
+        assert query_auth.called is False
         post_auth.assert_called_with(
             credentials=ReadOnlyCredentials('key', 'secret', None),
             service_name='signing_name',

@@ -28,25 +28,25 @@ class TestProxyConfiguration(unittest.TestCase):
     def test_construct_proxy_headers_with_auth(self):
         headers = self.proxy_config.proxy_headers_for(self.auth_url)
         proxy_auth = headers.get('Proxy-Authorization')
-        assert 'Basic dXNlcjpwYXNz' == proxy_auth
+        assert proxy_auth == 'Basic dXNlcjpwYXNz'
 
     def test_construct_proxy_headers_without_auth(self):
         headers = self.proxy_config.proxy_headers_for(self.url)
-        assert {} == headers
+        assert headers == {}
 
     def test_proxy_for_url_no_slashes(self):
         self.update_http_proxy('localhost:8081/')
         proxy_url = self.proxy_config.proxy_url_for(self.url)
-        assert 'http://localhost:8081/' == proxy_url
+        assert proxy_url == 'http://localhost:8081/' 
 
     def test_proxy_for_url_no_protocol(self):
         self.update_http_proxy('//localhost:8081/')
         proxy_url = self.proxy_config.proxy_url_for(self.url)
-        assert 'http://localhost:8081/' == proxy_url
+        assert proxy_url == 'http://localhost:8081/'
 
     def test_fix_proxy_url_has_protocol_http(self):
         proxy_url = self.proxy_config.proxy_url_for(self.url)
-        assert 'http://localhost:8081/' == proxy_url
+        assert proxy_url == 'http://localhost:8081/'
 
 
 class TestHttpSessionUtils(unittest.TestCase):
@@ -216,14 +216,14 @@ class TestURLLib3Session(unittest.TestCase):
         session = URLLib3Session()
         session.send(self.request.prepare())
         _, manager_kwargs = self.pool_manager_cls.call_args
-        assert manager_kwargs.get('ssl_context')
+        assert manager_kwargs.get('ssl_context') is not None
 
     def test_proxy_request_ssl_context_is_explicit(self):
         proxies = {'http': 'http://proxy.com'}
         session = URLLib3Session(proxies=proxies)
         session.send(self.request.prepare())
         _, proxy_kwargs = self.proxy_manager_fun.call_args
-        assert proxy_kwargs.get('ssl_context')
+        assert proxy_kwargs.get('ssl_context') is not None
 
     def test_session_forwards_socket_options_to_pool_manager(self):
         socket_options = [(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)]

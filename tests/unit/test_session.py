@@ -179,7 +179,8 @@ class SessionTest(BaseSessionTest):
         # Environment variables are always strings.
         self.environ['FOO_TIMEOUT'] = '10'
         # But we should type convert this to a string.
-        assert self.session.get_config_variable('metadata_service_timeout') == 10
+        assert self.session.get_config_variable(
+            'metadata_service_timeout') == 10
 
     def test_default_profile_specified_raises_exception(self):
         # If you explicity set the default profile and you don't
@@ -220,8 +221,8 @@ class SessionTest(BaseSessionTest):
 
             full_config = self.session.full_config
             assert full_config['profiles']['newprofile'] == {
-                             'aws_access_key_id': 'FROM_CREDS_FILE_1',
-                              'aws_secret_access_key': 'FROM_CREDS_FILE_2'}
+                'aws_access_key_id': 'FROM_CREDS_FILE_1',
+                'aws_secret_access_key': 'FROM_CREDS_FILE_2'}
 
     def test_path_not_in_available_profiles(self):
         with temporary_file('w') as f:
@@ -233,7 +234,7 @@ class SessionTest(BaseSessionTest):
 
             profiles = self.session.available_profiles
             assert set(profiles) == set([
-                    'foo', 'default', 'newprofile'])
+                'foo', 'default', 'newprofile'])
 
     def test_emit_delegates_to_emitter(self):
         calls = []
@@ -392,7 +393,7 @@ class TestSessionUserAgent(BaseSessionTest):
         assert self.session.user_agent().endswith('custom-thing/other')
 
     def test_execution_env_not_set(self):
-        assert not self.session.user_agent().endswith('FooEnv')
+        assert self.session.user_agent().endswith('FooEnv') is False
 
     def test_execution_env_set(self):
         self.environ['AWS_EXECUTION_ENV'] = 'FooEnv'
@@ -417,8 +418,8 @@ class TestConfigLoaderObject(BaseSessionTest):
             # Now trying to retrieve the scoped config should pull in
             # values from the shared credentials file.
             assert session.get_scoped_config() == {
-                             'aws_access_key_id': 'a',
-                              'aws_secret_access_key': 'b'}
+                'aws_access_key_id': 'a',
+                'aws_secret_access_key': 'b'}
 
 
 class TestGetServiceModel(BaseSessionTest):
@@ -479,9 +480,9 @@ class TestCreateClient(BaseSessionTest):
             aws_secret_access_key='bar',
             aws_session_token='baz')
         message = ("Credential provider was called even though "
-                         "explicit credentials were provided to the "
-                         "create_client call.")
-        assert not cred_provider.load_credentials.called, message
+                   "explicit credentials were provided to the "
+                   "create_client call.")
+        assert cred_provider.load_credentials.called is False, message
 
     def test_cred_provider_called_when_partial_creds_provided(self):
         with pytest.raises(botocore.exceptions.PartialCredentialsError):
@@ -503,7 +504,7 @@ class TestCreateClient(BaseSessionTest):
             'credential_provider', cred_provider)
         config = botocore.config.Config(signature_version=UNSIGNED)
         self.session.create_client('sts', 'us-west-2', config=config)
-        assert not cred_provider.load_credentials.called
+        assert cred_provider.load_credentials.called is False
 
     @mock.patch('botocore.client.ClientCreator')
     def test_config_passed_to_client_creator(self, client_creator):
@@ -660,7 +661,7 @@ class TestCreateClient(BaseSessionTest):
                     '    myservice = %s\n'
                     '    myservice2 = %s\n' % (
                         config_api_version, second_config_api_version)
-            )
+                    )
             f.flush()
 
             self.session.create_client('myservice', 'us-west-2')
@@ -703,12 +704,14 @@ class TestSessionComponent(BaseSessionTest):
     def test_internal_endpoint_resolver_is_same_as_deprecated_public(self):
         endpoint_resolver = self.session._get_internal_component(
             'endpoint_resolver')
-        assert self.session.get_component('endpoint_resolver') is endpoint_resolver
+        assert self.session.get_component(
+            'endpoint_resolver') is endpoint_resolver
 
     def test_internal_exceptions_factory_is_same_as_deprecated_public(self):
         exceptions_factory = self.session._get_internal_component(
             'exceptions_factory')
-        assert self.session.get_component('exceptions_factory') is exceptions_factory
+        assert self.session.get_component(
+            'exceptions_factory') is exceptions_factory
 
 
 class TestClientMonitoring(BaseSessionTest):
@@ -802,14 +805,14 @@ class TestComponentLocator(unittest.TestCase):
 
     def test_can_lazy_register_a_component(self):
         component = object()
-        lazy = lambda: component
+        def lazy(): return component
         self.components.lazy_register_component('foo', lazy)
         assert self.components.get_component('foo') is component
 
     def test_latest_registration_wins_even_if_lazy(self):
         first = object()
         second = object()
-        lazy_second = lambda: second
+        def lazy_second(): return second
         self.components.register_component('foo', first)
         self.components.lazy_register_component('foo', lazy_second)
         assert self.components.get_component('foo') is second
@@ -817,7 +820,7 @@ class TestComponentLocator(unittest.TestCase):
     def test_latest_registration_overrides_lazy(self):
         first = object()
         second = object()
-        lazy_first = lambda: first
+        def lazy_first(): return first
         self.components.lazy_register_component('foo', lazy_first)
         self.components.register_component('foo', second)
         assert self.components.get_component('foo') is second

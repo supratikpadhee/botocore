@@ -265,7 +265,7 @@ class TestOperationModelFromService(unittest.TestCase):
         operation = service_model.operation_model('OperationName')
         output = operation.output_shape
         assert list(output.members) == ['String']
-        assert not operation.has_streaming_output
+        assert operation.has_streaming_output is False
 
     def test_operation_shape_not_required(self):
         # It's ok if there's no output shape. We'll just get a return value of
@@ -301,12 +301,12 @@ class TestOperationModelFromService(unittest.TestCase):
         self.model['operations']['OperationName']['deprecated'] = False
         service_model = model.ServiceModel(self.model)
         operation_name = service_model.operation_model('OperationName')
-        assert not operation_name.deprecated
+        assert operation_name.deprecated is False
 
     def test_deprecated_absent(self):
         service_model = model.ServiceModel(self.model)
         operation_two = service_model.operation_model('OperationTwo')
-        assert not operation_two.deprecated
+        assert operation_two.deprecated is False
 
     def test_endpoint_operation_present(self):
         self.model['operations']['OperationName']['endpointoperation'] = True
@@ -318,11 +318,11 @@ class TestOperationModelFromService(unittest.TestCase):
         self.model['operations']['OperationName']['endpointoperation'] = False
         service_model = model.ServiceModel(self.model)
         operation_name = service_model.operation_model('OperationName')
-        assert not operation_name.is_endpoint_discovery_operation
+        assert operation_name.is_endpoint_discovery_operation is False
 
     def test_endpoint_operation_absent(self):
         operation_two = self.service_model.operation_model('OperationName')
-        assert not operation_two.is_endpoint_discovery_operation
+        assert operation_two.is_endpoint_discovery_operation is False
 
     def test_endpoint_discovery_required(self):
         operation = self.model['operations']['OperationName']
@@ -333,13 +333,13 @@ class TestOperationModelFromService(unittest.TestCase):
     def test_endpoint_discovery_required_false(self):
         self.model['operations']['OperationName']['endpointdiscovery'] = {}
         service_model = model.ServiceModel(self.model)
-        assert not service_model.endpoint_discovery_required
+        assert service_model.endpoint_discovery_required is False
 
     def test_endpoint_discovery_required_no_value(self):
         operation = self.model['operations']['OperationName']
         assert operation.get('endpointdiscovery') is None
         service_model = model.ServiceModel(self.model)
-        assert not service_model.endpoint_discovery_required
+        assert service_model.endpoint_discovery_required is False
 
     def test_endpoint_discovery_present(self):
         operation = self.model['operations']['OperationName']
@@ -716,7 +716,7 @@ class TestShapeResolver(unittest.TestCase):
         assert list(sorted(shape.members)) == ['NewPassword', 'OldPassword']
         assert shape.members['OldPassword'].name == 'passwordType'
         assert shape.members['OldPassword'].type_name == 'string'
-        assert shape.error_code == None
+        assert shape.error_code is None
 
     def test_exception_error_code(self):
         shapes = {
@@ -1003,10 +1003,10 @@ class TestBuilders(unittest.TestCase):
         )).build_model()
 
         # Members should be in order
-        assert ['A', 'B'] == list(shape.members.keys())
+        assert list(shape.members.keys()) == ['A', 'B']
 
         # Nested structure members should *also* stay ordered
-        assert ['C', 'D'] == list(shape.members['B'].members.keys())
+        assert list(shape.members['B'].members.keys()) == ['C', 'D']
 
 
 if __name__ == '__main__':

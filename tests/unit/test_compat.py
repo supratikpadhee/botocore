@@ -58,7 +58,7 @@ class TestEnsureBytes(unittest.TestCase):
         value = 'foo'
         response = ensure_bytes(value)
         assert isinstance(response, six.binary_type)
-        self.assertEqual(response, b'foo')
+        assert response == b'foo'
 
     def test_binary(self):
         value = b'bar'
@@ -80,7 +80,7 @@ class TestEnsureBytes(unittest.TestCase):
 
     def test_non_string_or_bytes_raises_error(self):
         value = 500
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             ensure_bytes(value)
 
 

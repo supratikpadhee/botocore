@@ -53,7 +53,7 @@ class TestClientRateLimiter(unittest.TestCase):
     def test_bucket_bucket_acquisition_only_if_enabled(self):
         rate_limiter = self.create_client_limiter()
         rate_limiter.on_sending_request(request=mock.sentinel.request)
-        assert not self.token_bucket.acquire.called
+        assert self.token_bucket.acquire.called is False
 
     def test_token_bucket_enabled_on_throttling_error(self):
         rate_limiter = self.create_client_limiter()

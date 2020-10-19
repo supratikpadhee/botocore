@@ -149,8 +149,8 @@ class TestWaiterModel(unittest.TestCase):
         success_acceptor = config.acceptors[0].matcher_func
         # success_acceptor is a callable that takes a response dict and returns
         # True or False.
-        assert success_acceptor({'Table': {'TableStatus': 'ACCEPTED'}})
-        assert not success_acceptor({'Table': {'TableStatus': 'CREATING'}})
+        assert success_acceptor({'Table': {'TableStatus': 'ACCEPTED'}}) is True
+        assert success_acceptor({'Table': {'TableStatus': 'CREATING'}}) is False
 
     def test_single_waiter_supports_status_code(self):
         single_waiter = {
@@ -162,8 +162,8 @@ class TestWaiterModel(unittest.TestCase):
         single_waiter.update(self.boiler_plate_config)
         config = SingleWaiterConfig(single_waiter)
         success_acceptor = config.acceptors[0].matcher_func
-        assert success_acceptor({'ResponseMetadata': {'HTTPStatusCode': 200}})
-        assert not success_acceptor({'ResponseMetadata': {'HTTPStatusCode': 404}})
+        assert success_acceptor({'ResponseMetadata': {'HTTPStatusCode': 200}}) is True
+        assert success_acceptor({'ResponseMetadata': {'HTTPStatusCode': 404}}) is False
 
     def test_single_waiter_supports_error(self):
         single_waiter = {
@@ -175,8 +175,8 @@ class TestWaiterModel(unittest.TestCase):
         single_waiter.update(self.boiler_plate_config)
         config = SingleWaiterConfig(single_waiter)
         success_acceptor = config.acceptors[0].matcher_func
-        assert success_acceptor({'Error': {'Code': 'DoesNotExistError'}})
-        assert not success_acceptor({'Error': {'Code': 'DoesNotExistErorr'}})
+        assert success_acceptor({'Error': {'Code': 'DoesNotExistError'}}) is True
+        assert success_acceptor({'Error': {'Code': 'DoesNotExistErorr'}}) is False
 
     def test_unknown_matcher(self):
         unknown_type = 'arbitrary_type'
@@ -195,15 +195,15 @@ class TestWaiterModel(unittest.TestCase):
         matches = self.create_acceptor_function(
             for_config={'state': 'success', 'matcher': 'pathAll',
                         'argument': 'Tables[].State', 'expected': 'GOOD'})
-        assert matches({'Tables': [{"State": "GOOD"}]})
-        assert matches({'Tables': [{"State": "GOOD"}, {"State": "GOOD"}]})
+        assert matches({'Tables': [{"State": "GOOD"}]}) is True
+        assert matches({'Tables': [{"State": "GOOD"}, {"State": "GOOD"}]}) is True
 
     def test_single_waiter_supports_path_any(self):
         matches = self.create_acceptor_function(
             for_config={'state': 'failure', 'matcher': 'pathAny',
                         'argument': 'Tables[].State', 'expected': 'FAIL'})
-        assert matches({'Tables': [{"State": "FAIL"}]})
-        assert matches({'Tables': [{"State": "GOOD"}, {"State": "FAIL"}]})
+        assert matches({'Tables': [{"State": "FAIL"}]}) is True
+        assert matches({'Tables': [{"State": "GOOD"}, {"State": "FAIL"}]}) is True
 
     def test_waiter_handles_error_responses_with_path_matchers(self):
         path_any = self.create_acceptor_function(
@@ -226,26 +226,26 @@ class TestWaiterModel(unittest.TestCase):
         matches = self.create_acceptor_function(
             for_config={'state': 'success', 'matcher': 'pathAll',
                         'argument': 'Tables[].State', 'expected': 'GOOD'})
-        assert not matches({'Tables': [{"State": "GOOD"}, {"State": "BAD"}]})
-        assert not matches({'Tables': [{"State": "BAD"}, {"State": "GOOD"}]})
-        assert not matches({'Tables': [{"State": "BAD"}, {"State": "BAD"}]})
-        assert not matches({'Tables': []})
-        assert not matches({'Tables': [{"State": "BAD"},
+        assert matches({'Tables': [{"State": "GOOD"}, {"State": "BAD"}]}) is False
+        assert matches({'Tables': [{"State": "BAD"}, {"State": "GOOD"}]}) is False
+        assert matches({'Tables': [{"State": "BAD"}, {"State": "BAD"}]}) is False
+        assert matches({'Tables': []}) is False
+        assert matches({'Tables': [{"State": "BAD"},
                                 {"State": "BAD"},
                                 {"State": "BAD"},
-                                {"State": "BAD"}]})
+                                {"State": "BAD"}]}) is False
 
     def test_path_all_missing_field(self):
         matches = self.create_acceptor_function(
             for_config={'state': 'success', 'matcher': 'pathAll',
                         'argument': 'Tables[].State', 'expected': 'GOOD'})
-        assert not matches({'Tables': [{"NotState": "GOOD"}, {"NotState": "BAD"}]})
+        assert matches({'Tables': [{"NotState": "GOOD"}, {"NotState": "BAD"}]}) is False
 
     def test_path_all_matcher_does_not_receive_list(self):
         matches = self.create_acceptor_function(
             for_config={'state': 'success', 'matcher': 'pathAll',
                         'argument': 'Tables[].State', 'expected': 'GOOD'})
-        assert not matches({"NotTables": []})
+        assert matches({"NotTables": []}) is False
 
     def test_single_waiter_supports_all_three_states(self):
         single_waiter = {
@@ -264,9 +264,9 @@ class TestWaiterModel(unittest.TestCase):
         # Each acceptors should be able to handle not matching
         # any type of response.
         matches_nothing = {}
-        assert not acceptors[0].matcher_func(matches_nothing)
-        assert not acceptors[1].matcher_func(matches_nothing)
-        assert not acceptors[2].matcher_func(matches_nothing)
+        assert acceptors[0].matcher_func(matches_nothing) is False
+        assert acceptors[1].matcher_func(matches_nothing) is False
+        assert acceptors[2].matcher_func(matches_nothing) is False
 
 
 class TestWaitersObjects(unittest.TestCase):

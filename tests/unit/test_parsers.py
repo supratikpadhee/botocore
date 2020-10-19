@@ -86,9 +86,10 @@ class TestResponseMetadataParsed(unittest.TestCase):
              'headers': {},
              'status_code': 200}, output_shape)
         assert parsed == {'Str': 'myname',
-                     'ResponseMetadata': {'RequestId': 'request-id',
-                                          'HTTPStatusCode': 200,
-                                          'HTTPHeaders': {}}}
+                        'ResponseMetadata': 
+                        {'RequestId': 'request-id',
+                        'HTTPStatusCode': 200,
+                        'HTTPHeaders': {}}}
 
     def test_metadata_always_exists_for_query(self):
         # ResponseMetadata is used for more than just the request id. It
@@ -159,9 +160,9 @@ class TestResponseMetadataParsed(unittest.TestCase):
         # Note that the response metadata is normalized to match the query
         # protocol, even though this is not how it appears in the output.
         assert parsed == {'Str': 'myname',
-                     'ResponseMetadata': {'RequestId': 'request-id',
-                                          'HTTPStatusCode': 200,
-                                          'HTTPHeaders': {}}}
+                          'ResponseMetadata': {'RequestId': 'request-id',
+                                               'HTTPStatusCode': 200,
+                                               'HTTPHeaders': {}}}
 
     def test_metadata_always_exists_for_ec2(self):
         # ResponseMetadata is used for more than just the request id. It
@@ -217,9 +218,9 @@ class TestResponseMetadataParsed(unittest.TestCase):
         # Note that the response metadata is normalized to match the query
         # protocol, even though this is not how it appears in the output.
         assert parsed == {'Str': 'mystring',
-                     'ResponseMetadata': {'RequestId': 'request-id',
-                                          'HTTPStatusCode': 200,
-                                          'HTTPHeaders': headers}}
+                          'ResponseMetadata': {'RequestId': 'request-id',
+                                               'HTTPStatusCode': 200,
+                                               'HTTPHeaders': headers}}
 
     def test_response_no_initial_event_stream(self):
         parser = parsers.JSONParser()
@@ -302,9 +303,9 @@ class TestResponseMetadataParsed(unittest.TestCase):
         # Note that the response metadata is normalized to match the query
         # protocol, even though this is not how it appears in the output.
         assert parsed == {'Str': 'mystring',
-                     'ResponseMetadata': {'RequestId': 'request-id',
-                                          'HTTPStatusCode': 200,
-                                          'HTTPHeaders': headers}}
+                          'ResponseMetadata': {'RequestId': 'request-id',
+                                               'HTTPStatusCode': 200,
+                                               'HTTPHeaders': headers}}
 
     def test_metadata_always_exists_on_rest_json_response(self):
         # ResponseMetadata is used for more than just the request id. It
@@ -351,9 +352,9 @@ class TestResponseMetadataParsed(unittest.TestCase):
             {'body': '', 'headers': headers, 'status_code': 200}, None)
         assert parsed == {
             'ResponseMetadata': {'RequestId': 'request-id',
-                                  'HostId': 'second-id',
-                                  'HTTPStatusCode': 200,
-                                  'HTTPHeaders': headers}}
+                                 'HostId': 'second-id',
+                                 'HTTPStatusCode': 200,
+                                 'HTTPHeaders': headers}}
 
     def test_metadata_always_exists_on_rest_xml_response(self):
         # ResponseMetadata is used for more than just the request id. It
@@ -426,7 +427,8 @@ class TestHeaderResponseInclusion(unittest.TestCase):
         # We've had the contract that you can json serialize a
         # response.  So we want to ensure that despite using a CustomHeaderDict
         # we can always JSON dumps the response metadata.
-        assert json.loads(json.dumps(metadata))['HTTPHeaders']['header1'] == 'foo'
+        assert json.loads(json.dumps(metadata))[
+            'HTTPHeaders']['header1'] == 'foo'
 
 
 class TestResponseParsingDatetimes(unittest.TestCase):
@@ -528,8 +530,8 @@ class TestHandlesNoOutputShape(unittest.TestCase):
             output_shape)
         assert parsed == {
             'ResponseMetadata': {'RequestId': 'request-id',
-                                  'HTTPStatusCode': 200,
-                                  'HTTPHeaders': headers}}
+                                 'HTTPStatusCode': 200,
+                                 'HTTPHeaders': headers}}
 
     def test_empty_rest_xml_response(self):
         # This is the format used by cloudfront, route53.
@@ -541,8 +543,8 @@ class TestHandlesNoOutputShape(unittest.TestCase):
             output_shape)
         assert parsed == {
             'ResponseMetadata': {'RequestId': 'request-id',
-                                  'HTTPStatusCode': 200,
-                                  'HTTPHeaders': headers}}
+                                 'HTTPStatusCode': 200,
+                                 'HTTPHeaders': headers}}
 
     def test_empty_query_response(self):
         body = (
@@ -559,8 +561,8 @@ class TestHandlesNoOutputShape(unittest.TestCase):
             output_shape)
         assert parsed == {
             'ResponseMetadata': {'RequestId': 'request-id',
-                                  'HTTPStatusCode': 200,
-                                  'HTTPHeaders': {}}}
+                                 'HTTPStatusCode': 200,
+                                 'HTTPHeaders': {}}}
 
     def test_empty_json_response(self):
         headers = {'x-amzn-requestid': 'request-id'}
@@ -572,8 +574,8 @@ class TestHandlesNoOutputShape(unittest.TestCase):
             output_shape)
         assert parsed == {
             'ResponseMetadata': {'RequestId': 'request-id',
-                                  'HTTPStatusCode': 200,
-                                  'HTTPHeaders': headers}}
+                                 'HTTPStatusCode': 200,
+                                 'HTTPHeaders': headers}}
 
 
 class TestHandlesInvalidXMLResponses(unittest.TestCase):
@@ -587,7 +589,7 @@ class TestHandlesInvalidXMLResponses(unittest.TestCase):
         output_shape = None
         # The XML body should be in the error message.
         with pytest.raises(parsers.ResponseParserError,
-                                   match='<DeleteTagsResponse'):
+                           match='<DeleteTagsResponse'):
             parser.parse(
                 {'body': invalid_xml, 'headers': {}, 'status_code': 200},
                 output_shape)
@@ -1132,13 +1134,13 @@ class TestParseErrorResponses(unittest.TestCase):
         body = (b'{"code":"AccessDeniedException","type":"Client","message":'
                 b'"Access denied"}')
         headers = {
-             'x-amzn-requestid': 'request-id'
+            'x-amzn-requestid': 'request-id'
         }
         parser = parsers.RestJSONParser()
         parsed = parser.parse(
             {'body': body, 'headers': headers, 'status_code': 400}, None)
         assert parsed['Error'] == {'Message': 'Access denied',
-                                           'Code': 'AccessDeniedException'}
+                                   'Code': 'AccessDeniedException'}
 
     def test_can_parse_restjson_error_code(self):
         body = b'''{
@@ -1149,25 +1151,25 @@ class TestParseErrorResponses(unittest.TestCase):
             "message": "blah",
             "deletes": 0}'''
         headers = {
-             'x-amzn-requestid': 'request-id'
+            'x-amzn-requestid': 'request-id'
         }
         parser = parsers.RestJSONParser()
         parsed = parser.parse(
             {'body': body, 'headers': headers, 'status_code': 400}, None)
         assert parsed['Error'] == {'Message': 'blah',
-                                           'Code': 'WasUnableToParseThis'}
+                                   'Code': 'WasUnableToParseThis'}
 
     def test_can_parse_with_case_insensitive_keys(self):
         body = (b'{"Code":"AccessDeniedException","type":"Client","Message":'
                 b'"Access denied"}')
         headers = {
-             'x-amzn-requestid': 'request-id'
+            'x-amzn-requestid': 'request-id'
         }
         parser = parsers.RestJSONParser()
         parsed = parser.parse(
             {'body': body, 'headers': headers, 'status_code': 400}, None)
         assert parsed['Error'] == {'Message': 'Access denied',
-                                           'Code': 'AccessDeniedException'}
+                                   'Code': 'AccessDeniedException'}
 
     def test_can_parse_rest_json_modeled_fields(self):
         body = (
@@ -1271,7 +1273,7 @@ class TestParseErrorResponses(unittest.TestCase):
         # We should be able to handle this gracefully and still at least
         # populate a "Message" key so that consumers don't have to
         # conditionally check for this.
-        body =  (
+        body = (
             '<ErrorResponse>'
             '  <Error>'
             '    <Type>Sender</Type>'
@@ -1294,7 +1296,7 @@ def test_can_handle_generic_error_message():
     # There are times when you can get a service to respond with a generic
     # html error page.  We should be able to handle this case.
     for parser_cls in parsers.PROTOCOL_PARSERS.values():
-        generic_html_body =  (
+        generic_html_body = (
             '<html><body><b>Http/1.1 Service Unavailable</b></body></html>'
         ).encode('utf-8')
         empty_body = b''

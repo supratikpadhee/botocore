@@ -322,7 +322,7 @@ class TestEndpointCreator(unittest.TestCase):
             endpoint_url='https://example.com', verify=False,
             http_session_cls=self.mock_session)
         session_args = self.mock_session.call_args[1]
-        assert not session_args.get('verify')
+        assert session_args.get('verify') is False
 
     def test_verify_ssl_can_specify_cert_bundle(self):
         endpoint = self.creator.create_endpoint(

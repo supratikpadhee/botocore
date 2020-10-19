@@ -932,7 +932,7 @@ class TestHandlers(BaseSessionTest):
         response = handlers.set_operation_specific_signer(
             context=context, signing_name=signing_name)
         assert response == 'v4'
-        assert not context.get('payload_signing_enabled')
+        assert context.get('payload_signing_enabled') is False
 
     def test_set_operation_specific_signer_s3v4_unsigned_payload(self):
         signing_name = 's3'
@@ -940,7 +940,7 @@ class TestHandlers(BaseSessionTest):
         response = handlers.set_operation_specific_signer(
             context=context, signing_name=signing_name)
         assert response == 's3v4'
-        assert not context.get('payload_signing_enabled')
+        assert context.get('payload_signing_enabled') is False
 
 
 class TestConvertStringBodyToFileLikeObject(BaseSessionTest):
@@ -1006,8 +1006,9 @@ class TestRetryHandlerOrder(BaseSessionTest):
         assert 'RetryHandler' in names
         s3_200_handler = names.index('check_for_200_error')
         general_retry_handler = names.index('RetryHandler')
-        message = "S3 200 error handler was supposed to be before the general retry handler, but it was not."
-        assert s3_200_handler < general_retry_handler, message
+        message = ("S3 200 error handler was supposed to be"
+        "before the general retry handler, but it was not.")
+        assert s3_200_handler < general_retry_handler, messge
 
 
 class BaseMD5Test(BaseSessionTest):
@@ -1268,7 +1269,7 @@ class TestParameterAlias(unittest.TestCase):
             self.sample_section
         )
         contents = self.sample_section.flush_structure().decode('utf-8')
-        assert self.alias_name + '=' in  contents
+        assert self.alias_name + '=' in contents
         assert self.original_name + '=' not in contents
 
 

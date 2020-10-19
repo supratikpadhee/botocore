@@ -124,29 +124,29 @@ class TestEndpointResolver(unittest.TestCase):
 
     def test_returns_empty_list_when_listing_for_different_partition(self):
         resolver = regions.EndpointResolver(self._template())
-        assert [] == resolver.get_available_endpoints('ec2', 'bar')
+        assert resolver.get_available_endpoints('ec2', 'bar') == [] 
 
     def test_returns_empty_list_when_no_service_found(self):
         resolver = regions.EndpointResolver(self._template())
-        assert [] == resolver.get_available_endpoints('what?')
+        assert resolver.get_available_endpoints('what?') == []
 
     def test_gets_endpoint_names(self):
         resolver = regions.EndpointResolver(self._template())
         result = resolver.get_available_endpoints(
             'ec2', allow_non_regional=True)
-        assert ['d', 'eu-baz', 'us-bar', 'us-foo'] == sorted(result)
+        assert sorted(result) == ['d', 'eu-baz', 'us-bar', 'us-foo']
 
     def test_gets_endpoint_names_for_partition(self):
         resolver = regions.EndpointResolver(self._template())
         result = resolver.get_available_endpoints(
             'ec2', allow_non_regional=True, partition_name='foo')
-        assert ['foo-1', 'foo-2', 'foo-3'] == sorted(result)
+        assert sorted(result) == ['foo-1', 'foo-2', 'foo-3']
 
     def test_list_regional_endpoints_only(self):
         resolver = regions.EndpointResolver(self._template())
         result = resolver.get_available_endpoints(
             'ec2', allow_non_regional=False)
-        assert ['eu-baz', 'us-bar', 'us-foo'] == sorted(result)
+        assert sorted(result) == ['eu-baz', 'us-bar', 'us-foo']
 
     def test_returns_none_when_no_match(self):
         resolver = regions.EndpointResolver(self._template())
@@ -155,64 +155,64 @@ class TestEndpointResolver(unittest.TestCase):
     def test_constructs_regionalized_endpoints_for_exact_matches(self):
         resolver = regions.EndpointResolver(self._template())
         result = resolver.construct_endpoint('not-regionalized', 'eu-baz')
-        assert 'not-regionalized.eu-baz.amazonaws.com' == result['hostname']
-        assert 'aws' == result['partition']
-        assert 'eu-baz' == result['endpointName']
+        assert result['hostname'] == 'not-regionalized.eu-baz.amazonaws.com'
+        assert result['partition'] == 'aws'
+        assert result['endpointName'] == 'eu-baz'
 
     def test_constructs_partition_endpoints_for_real_partition_region(self):
         resolver = regions.EndpointResolver(self._template())
         result = resolver.construct_endpoint('not-regionalized', 'us-bar')
-        assert 'not-regionalized' == result['hostname']
-        assert 'aws' == result['partition']
-        assert 'aws' == result['endpointName']
+        assert result['hostname'] == 'not-regionalized'
+        assert result['partition'] == 'aws'
+        assert result['endpointName'] == 'aws'
 
     def test_constructs_partition_endpoints_for_regex_match(self):
         resolver = regions.EndpointResolver(self._template())
         result = resolver.construct_endpoint('not-regionalized', 'us-abc')
-        assert 'not-regionalized' == result['hostname']
+        assert result['hostname'] == 'not-regionalized'
 
     def test_constructs_endpoints_for_regionalized_regex_match(self):
         resolver = regions.EndpointResolver(self._template())
         result = resolver.construct_endpoint('s3', 'us-abc')
-        assert 's3.us-abc.amazonaws.com' == result['hostname']
+        assert result['hostname'] == 's3.us-abc.amazonaws.com'
 
     def test_constructs_endpoints_for_unknown_service_but_known_region(self):
         resolver = regions.EndpointResolver(self._template())
         result = resolver.construct_endpoint('unknown', 'us-foo')
-        assert 'unknown.us-foo.amazonaws.com' == result['hostname']
+        assert result['hostname'] == 'unknown.us-foo.amazonaws.com'
 
     def test_merges_service_keys(self):
         resolver = regions.EndpointResolver(self._template())
         us_foo = resolver.construct_endpoint('merge', 'us-foo')
         us_bar = resolver.construct_endpoint('merge', 'us-bar')
-        assert ['http'] == us_foo['protocols']
-        assert ['v4'] == us_foo['signatureVersions']
-        assert ['https'] == us_bar['protocols']
-        assert ['v2'] == us_bar['signatureVersions']
+        assert us_foo['protocols'] == ['http']
+        assert us_foo['signatureVersions'] == ['v4']
+        assert us_bar['protocols'] == ['https']
+        assert us_bar['signatureVersions'] == ['v2']
 
     def test_merges_partition_default_keys_with_no_overwrite(self):
         resolver = regions.EndpointResolver(self._template())
         resolved = resolver.construct_endpoint('ec2', 'foo-1')
-        assert 'baz' == resolved['foo']
-        assert ['http'] == resolved['protocols']
+        assert resolved['foo'] == 'baz'
+        assert resolved['protocols'] == ['http']
 
     def test_merges_partition_default_keys_with_overwrite(self):
         resolver = regions.EndpointResolver(self._template())
         resolved = resolver.construct_endpoint('ec2', 'foo-2')
-        assert 'bar' == resolved['foo']
-        assert ['http'] == resolved['protocols']
+        assert resolved['foo'] == 'bar'
+        assert resolved['protocols'] == ['http']
 
     def test_gives_hostname_and_common_name_unaltered(self):
         resolver = regions.EndpointResolver(self._template())
         result = resolver.construct_endpoint('s3', 'eu-baz')
-        assert 's3.eu-baz.amazonaws.com' == result['sslCommonName']
-        assert 'foo' == result['hostname']
+        assert result['sslCommonName'] == 's3.eu-baz.amazonaws.com'
+        assert result['hostname'] == 'foo'
 
     def tests_uses_partition_endpoint_when_no_region_provided(self):
         resolver = regions.EndpointResolver(self._template())
         result = resolver.construct_endpoint('not-regionalized')
-        assert 'not-regionalized' == result['hostname']
-        assert 'aws' == result['endpointName']
+        assert result['hostname'] == 'not-regionalized'
+        assert result['endpointName'] == 'aws'
 
     def test_returns_dns_suffix_if_available(self):
         resolver = regions.EndpointResolver(self._template())

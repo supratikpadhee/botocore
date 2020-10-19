@@ -451,7 +451,7 @@ def assert_chain_does_provide(providers, expected_value):
     assert value == expected_value
 
 
-@pytest.mark.parametrize("first, second", [
+@pytest.mark.parametrize("expected,return_values", [
     (None, []),
     (None, [None]),
     ('foo', ['foo']),
@@ -463,14 +463,14 @@ def assert_chain_does_provide(providers, expected_value):
     ('foo', ['foo', 'bar', None]),
     ('foo', ['foo', 'bar', 'baz']),
 ])
-def test_chain_provider(first, second):
+def test_chain_provider(expected, return_values):
     # Each case is a tuple with the first element being the expected return
     # value form the ChainProvider. The second value being a list of return
     # values from the individual providers that are in the chain.
 
     assert_chain_does_provide(
-        _make_providers_that_return(second),
-        first)
+        _make_providers_that_return(return_values),
+        expected)
 
 
 class TestChainProvider(unittest.TestCase):

@@ -97,7 +97,7 @@ class TestIsJSONValueHeader(unittest.TestCase):
     def test_no_serialization_section(self):
         shape = mock.Mock()
         shape.type_name = 'string'
-        assert not is_json_value_header(shape)
+        assert is_json_value_header(shape) is False
 
     def test_non_jsonvalue_shape(self):
         shape = mock.Mock()
@@ -105,7 +105,7 @@ class TestIsJSONValueHeader(unittest.TestCase):
             'location': 'header'
         }
         shape.type_name = 'string'
-        assert not is_json_value_header(shape)
+        assert is_json_value_header(shape) is False
 
     def test_non_header_jsonvalue_shape(self):
         shape = mock.Mock()
@@ -113,7 +113,7 @@ class TestIsJSONValueHeader(unittest.TestCase):
             'jsonvalue': True
         }
         shape.type_name = 'string'
-        assert not is_json_value_header(shape)
+        assert is_json_value_header(shape) is False
 
     def test_non_string_jsonvalue_shape(self):
         shape = mock.Mock()
@@ -122,7 +122,7 @@ class TestIsJSONValueHeader(unittest.TestCase):
             'jsonvalue': True
         }
         shape.type_name = 'integer'
-        assert not is_json_value_header(shape)
+        assert is_json_value_header(shape) is False
 
     def test_json_value_header(self):
         shape = mock.Mock()
@@ -131,7 +131,7 @@ class TestIsJSONValueHeader(unittest.TestCase):
             'location': 'header'
         }
         shape.type_name = 'string'
-        assert is_json_value_header(shape)
+        assert is_json_value_header(shape) is True
 
 
 
@@ -255,7 +255,7 @@ class TestSetValueFromJMESPath(unittest.TestCase):
         assert self.data['Marker'] == 'new-token'
 
     def test_single_depth_new(self):
-        assert not 'Limit' in self.data
+        assert 'Limit' not in self.data
         set_value_from_jmespath(self.data, 'Limit', 100)
         assert self.data['Limit'] == 100
 
@@ -264,7 +264,7 @@ class TestSetValueFromJMESPath(unittest.TestCase):
         assert self.data['Response']['Thing']['Name'] == 'New Name'
 
     def test_multiple_depth_new(self):
-        assert not 'Brand' in self.data
+        assert 'Brand' not in self.data
         set_value_from_jmespath(self.data, 'Brand.New', {'abc': 123})
         assert self.data['Brand']['New']['abc'] == 123
 
@@ -653,19 +653,19 @@ class TestTreeHash(unittest.TestCase):
 
 class TestIsValidEndpointURL(unittest.TestCase):
     def test_dns_name_is_valid(self):
-        assert is_valid_endpoint_url('https://s3.amazonaws.com/')
+        assert is_valid_endpoint_url('https://s3.amazonaws.com/') 
 
     def test_ip_address_is_allowed(self):
-        assert is_valid_endpoint_url('https://10.10.10.10/')
+        assert is_valid_endpoint_url('https://10.10.10.10/') 
 
     def test_path_component_ignored(self):
-        assert is_valid_endpoint_url('https://foo.bar.com/other/path/')
+        assert is_valid_endpoint_url('https://foo.bar.com/other/path/') 
 
     def test_can_have_port(self):
-        assert is_valid_endpoint_url('https://foo.bar.com:12345/')
+        assert is_valid_endpoint_url('https://foo.bar.com:12345/') 
 
     def test_ip_can_have_port(self):
-        assert is_valid_endpoint_url('https://10.10.10.10:12345/')
+        assert is_valid_endpoint_url('https://10.10.10.10:12345/') 
 
     def test_cannot_have_spaces(self):
         assert not is_valid_endpoint_url('https://my invalid name/')
@@ -681,10 +681,10 @@ class TestIsValidEndpointURL(unittest.TestCase):
         assert not is_valid_endpoint_url(long_hostname)
 
     def test_hostname_can_end_with_dot(self):
-        assert is_valid_endpoint_url('https://foo.bar.com./')
+        assert is_valid_endpoint_url('https://foo.bar.com./') 
 
     def test_hostname_no_dots(self):
-        assert is_valid_endpoint_url('https://foo/')
+        assert is_valid_endpoint_url('https://foo/') 
 
 
 class TestFixS3Host(unittest.TestCase):
@@ -1927,7 +1927,7 @@ class TestContainerMetadataFetcher(unittest.TestCase):
         fetcher = self.create_fetcher()
         with pytest.raises(ValueError, match='Unsupported host'):
             fetcher.retrieve_full_uri(full_uri)
-        assert not self.http.send.called
+        assert self.http.send.called is False
 
     def test_can_specify_extra_headers_are_merged(self):
         headers = {

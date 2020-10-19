@@ -99,7 +99,7 @@ class SessionTest(BaseSessionTest):
         self.environ['FOO_PROFILE'] = 'bar'
         # Even though we didn't explicitly pass in a profile, the
         # profile property will still look this up for us.
-        assert self.session.profile == 'bar' 
+        assert self.session.profile == 'bar'
 
     def test_multiple_env_vars_uses_second_var(self):
         env_vars = {
@@ -201,8 +201,8 @@ class SessionTest(BaseSessionTest):
 
             full_config = self.session.full_config
             assert full_config['profiles']['newprofile'] == {
-                             'aws_access_key_id': 'FROM_CREDS_FILE_1',
-                              'aws_secret_access_key': 'FROM_CREDS_FILE_2'}
+                'aws_access_key_id': 'FROM_CREDS_FILE_1',
+                'aws_secret_access_key': 'FROM_CREDS_FILE_2'}
 
     def test_path_not_in_available_profiles(self):
         with temporary_file('w') as f:
@@ -328,27 +328,27 @@ class TestSessionConfigurationVars(BaseSessionTest):
         # information from the session and that it has the expected value.
         self.session = create_session()
         assert self.session.session_var_map['region'] == (
-                         'region', 'AWS_DEFAULT_REGION', None, None)
+            'region', 'AWS_DEFAULT_REGION', None, None)
         assert self.session.session_var_map['profile'] == (
-                        None, ['AWS_DEFAULT_PROFILE', 'AWS_PROFILE'], None, None)
+            None, ['AWS_DEFAULT_PROFILE', 'AWS_PROFILE'], None, None)
         assert self.session.session_var_map['data_path'] == (
-                        'data_path', 'AWS_DATA_PATH', None, None)
+            'data_path', 'AWS_DATA_PATH', None, None)
         assert self.session.session_var_map['config_file'] == (
-                        None, 'AWS_CONFIG_FILE', '~/.aws/config', None)
+            None, 'AWS_CONFIG_FILE', '~/.aws/config', None)
         assert self.session.session_var_map['ca_bundle'] == (
-                        'ca_bundle', 'AWS_CA_BUNDLE', None, None)
+            'ca_bundle', 'AWS_CA_BUNDLE', None, None)
         assert self.session.session_var_map['api_versions'] == (
-                        'api_versions', None, {}, None)
+            'api_versions', None, {}, None)
         assert self.session.session_var_map['credentials_file'] == (
-                        None, 'AWS_SHARED_CREDENTIALS_FILE', '~/.aws/credentials', None)
+            None, 'AWS_SHARED_CREDENTIALS_FILE', '~/.aws/credentials', None)
         assert self.session.session_var_map['metadata_service_timeout'] == (
-                        'metadata_service_timeout',
-                        'AWS_METADATA_SERVICE_TIMEOUT', 1, int)
+            'metadata_service_timeout',
+            'AWS_METADATA_SERVICE_TIMEOUT', 1, int)
         assert self.session.session_var_map['metadata_service_num_attempts'] == (
-                        'metadata_service_num_attempts',
-                        'AWS_METADATA_SERVICE_NUM_ATTEMPTS', 1, int)
+            'metadata_service_num_attempts',
+            'AWS_METADATA_SERVICE_NUM_ATTEMPTS', 1, int)
         assert self.session.session_var_map['parameter_validation'] == (
-                        'parameter_validation', None, True, None)
+            'parameter_validation', None, True, None)
 
 
 class TestSessionPartitionFiles(BaseSessionTest):
@@ -357,7 +357,7 @@ class TestSessionPartitionFiles(BaseSessionTest):
         mock_resolver.get_available_partitions.return_value = ['foo']
         self.session._register_internal_component(
             'endpoint_resolver', mock_resolver)
-        assert ['foo'] == self.session.get_available_partitions()
+        assert self.session.get_available_partitions() == ['foo']
 
     def test_proxies_list_endpoints_to_resolver(self):
         resolver = mock.Mock()
@@ -368,29 +368,28 @@ class TestSessionPartitionFiles(BaseSessionTest):
 
     def test_provides_empty_list_for_unknown_service_regions(self):
         regions = self.session.get_available_regions('__foo__')
-        assert [] == regions
+        assert regions == []
 
 
 class TestSessionUserAgent(BaseSessionTest):
     def test_can_change_user_agent_name(self):
         self.session.user_agent_name = 'something-else'
-        assert self.session.user_agent().startswith('something-else')
+        assert self.session.user_agent().startswith('something-else') is True
 
     def test_can_change_user_agent_version(self):
         self.session.user_agent_version = '24.0'
-        assert self.session.user_agent().startswith('Botocore/24.0')
+        assert self.session.user_agent().startswith('Botocore/24.0') is True
 
     def test_can_append_to_user_agent(self):
         self.session.user_agent_extra = 'custom-thing/other'
-        self.assertTrue(
-            self.session.user_agent().endswith('custom-thing/other'))
+        assert self.session.user_agent().endswith('custom-thing/other') is True
 
     def test_execution_env_not_set(self):
-        assert not self.session.user_agent().endswith('FooEnv')
+        assert self.session.user_agent().endswith('FooEnv') is False
 
     def test_execution_env_set(self):
         self.environ['AWS_EXECUTION_ENV'] = 'FooEnv'
-        assert self.session.user_agent().endswith(' exec-env/FooEnv')
+        assert self.session.user_agent().endswith(' exec-env/FooEnv') is True
 
     def test_agent_extra_and_exec_env(self):
         self.session.user_agent_extra = 'custom-thing/other'
@@ -412,8 +411,8 @@ class TestConfigLoaderObject(BaseSessionTest):
             # Now trying to retrieve the scoped config should pull in
             # values from the shared credentials file.
             assert session.get_scoped_config() == {
-                             'aws_access_key_id': 'a',
-                              'aws_secret_access_key': 'b'}
+                'aws_access_key_id': 'a',
+                'aws_secret_access_key': 'b'}
 
 
 class TestGetServiceModel(BaseSessionTest):
@@ -474,9 +473,9 @@ class TestCreateClient(BaseSessionTest):
             aws_secret_access_key='bar',
             aws_session_token='baz')
         message = ("Credential provider was called even though"
-                  "explicit credentials were provided to the "
-                  "create_client call.")
-        assert not cred_provider.load_credentials.called, message
+                   "explicit credentials were provided to the "
+                   "create_client call.")
+        assert cred_provider.load_credentials.called is False, message
 
     def test_cred_provider_called_when_partial_creds_provided(self):
         with pytest.raises(botocore.exceptions.PartialCredentialsError):
@@ -651,7 +650,7 @@ class TestCreateClient(BaseSessionTest):
                     '    myservice = %s\n'
                     '    myservice2 = %s\n' % (
                         config_api_version, second_config_api_version)
-            )
+                    )
             f.flush()
 
             self.session.create_client('myservice', 'us-west-2')
@@ -695,12 +694,14 @@ class TestSessionComponent(BaseSessionTest):
     def test_internal_endpoint_resolver_is_same_as_deprecated_public(self):
         endpoint_resolver = self.session._get_internal_component(
             'endpoint_resolver')
-        assert self.session.get_component('endpoint_resolver') is endpoint_resolver
+        assert self.session.get_component(
+            'endpoint_resolver') is endpoint_resolver
 
     def test_internal_exceptions_factory_is_same_as_deprecated_public(self):
         exceptions_factory = self.session._get_internal_component(
             'exceptions_factory')
-        assert self.session.get_component('exceptions_factory') is exceptions_factory
+        assert self.session.get_component(
+            'exceptions_factory') is exceptions_factory
 
 
 class TestComponentLocator(unittest.TestCase):
@@ -725,14 +726,14 @@ class TestComponentLocator(unittest.TestCase):
 
     def test_can_lazy_register_a_component(self):
         component = object()
-        lazy = lambda: component
+        def lazy(): return component
         self.components.lazy_register_component('foo', lazy)
         assert self.components.get_component('foo') is component
 
     def test_latest_registration_wins_even_if_lazy(self):
         first = object()
         second = object()
-        lazy_second = lambda: second
+        def lazy_second(): return second
         self.components.register_component('foo', first)
         self.components.lazy_register_component('foo', lazy_second)
         assert self.components.get_component('foo') is second
@@ -740,7 +741,7 @@ class TestComponentLocator(unittest.TestCase):
     def test_latest_registration_overrides_lazy(self):
         first = object()
         second = object()
-        lazy_first = lambda: first
+        def lazy_first(): return first
         self.components.lazy_register_component('foo', lazy_first)
         self.components.register_component('foo', second)
         assert self.components.get_component('foo') is second

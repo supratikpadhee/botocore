@@ -81,7 +81,7 @@ class TestStreamWrapper(unittest.TestCase):
     def test_streaming_body_closes(self):
         body = six.BytesIO(b'1234567890')
         stream = response.StreamingBody(body, content_length=10)
-        assert not body.closed
+        assert body.closed is False
         stream.close()
         assert body.closed
 
